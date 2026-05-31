@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  priceRange   String   @default("mid") // budget | mid | high
+  createdAt    DateTime @default(now())
+
+  memberships    GroupMember[]
+  availability   Availability[]
+  sentProposals  MeetingProposal[] @relation("ProposalCreator")
+  votes          MeetingVote[]
+  eventLikes     EventLike[]
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  priceRange  String   @default("mid") // budget | mid | high
+  createdAt   DateTime @default(now())
+
+  members   GroupMember[]
+  proposals MeetingProposal[]
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  role     String   @default("member") // owner | member
+  joinedAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  userId    String
+  dayOfWeek Int?     // 0=Sun, 1=Mon ... 6=Sat (for recurring)
+  date      String?  // "YYYY-MM-DD" for specific dates
+  type      String   // "free" | "busy"
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MeetingProposal {
+  id              String   @id @default(cuid())
+  groupId         String
+  createdById     String
+  proposedDate    String   // "YYYY-MM-DD"
+  proposedTime    String   // "18:00"
+  restaurantName  String
+  restaurantArea  String
+  restaurantGenre String
+  estimatedCost   String
+  status          String   @default("pending") // pending | confirmed | cancelled
+  createdAt       DateTime @default(now())
+
+  group     Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("ProposalCreator", fields: [createdById], references: [id])
+  votes     MeetingVote[]
+}
+
+model MeetingVote {
+  id         String   @id @default(cuid())
+  proposalId String
+  userId     String
+  vote       String   // "accept" | "decline" | "maybe"
+  createdAt  DateTime @default(now())
+
+  proposal MeetingProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id])
+
+  @@unique([proposalId, userId])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  date        String   // "YYYY-MM-DD"
+  title       String
+  genre       String   // music | food | sports | art | theater | festival
+  venue       String
+  area        String
+  description String?
+  url         String?
+  imageUrl    String?
+
+  likes EventLike[]
+}
+
+model EventLike {
+  id      String @id @default(cuid())
+  eventId String
+  userId  String
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+}

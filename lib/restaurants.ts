@@ -1,0 +1,240 @@
+export interface Restaurant {
+  name: string
+  area: string
+  genre: string
+  priceRange: 'budget' | 'mid' | 'high'
+  rating: number
+  phone: string
+  description: string
+}
+
+const restaurants: Restaurant[] = [
+  {
+    name: '炭火焼き 渋谷 山本',
+    area: '渋谷',
+    genre: '焼肉',
+    priceRange: 'mid',
+    rating: 4.3,
+    phone: '03-1234-5601',
+    description: '厳選黒毛和牛を炭火で豪快に焼く人気の焼肉店',
+  },
+  {
+    name: '鮨 銀座 一',
+    area: '銀座',
+    genre: '寿司',
+    priceRange: 'high',
+    rating: 4.8,
+    phone: '03-1234-5602',
+    description: '江戸前寿司の真髄を体験できる老舗寿司店',
+  },
+  {
+    name: 'ビストロ 恵比寿 シェ・ポール',
+    area: '恵比寿',
+    genre: 'フレンチ',
+    priceRange: 'high',
+    rating: 4.6,
+    phone: '03-1234-5603',
+    description: '本格フランス料理をカジュアルに楽しめるビストロ',
+  },
+  {
+    name: '居酒屋 新宿 いろは',
+    area: '新宿',
+    genre: '居酒屋',
+    priceRange: 'budget',
+    rating: 4.1,
+    phone: '03-1234-5604',
+    description: 'アットホームな雰囲気で地酒と旬の料理を楽しめる居酒屋',
+  },
+  {
+    name: 'ラーメン 中目黒 麺道場',
+    area: '中目黒',
+    genre: 'ラーメン',
+    priceRange: 'budget',
+    rating: 4.4,
+    phone: '03-1234-5605',
+    description: '豚骨醤油スープの濃厚ラーメンが人気の専門店',
+  },
+  {
+    name: 'イタリアン 代官山 テラッツァ',
+    area: '代官山',
+    genre: 'イタリアン',
+    priceRange: 'mid',
+    rating: 4.5,
+    phone: '03-1234-5606',
+    description: 'テラス席で食べる本格ナポリピッツァとパスタ',
+  },
+  {
+    name: '天ぷら 表参道 天よし',
+    area: '表参道',
+    genre: '天ぷら',
+    priceRange: 'high',
+    rating: 4.7,
+    phone: '03-1234-5607',
+    description: '旬の食材を使った江戸前天ぷらのカウンタースタイル店',
+  },
+  {
+    name: 'カフェ 渋谷 ブランシュ',
+    area: '渋谷',
+    genre: 'カフェ',
+    priceRange: 'budget',
+    rating: 4.0,
+    phone: '03-1234-5608',
+    description: 'こだわりのスペシャルティコーヒーとスイーツのカフェ',
+  },
+  {
+    name: '韓国料理 新宿 ハニャン',
+    area: '新宿',
+    genre: '韓国料理',
+    priceRange: 'budget',
+    rating: 4.2,
+    phone: '03-1234-5609',
+    description: '本場韓国の味を再現したサムギョプサルとチゲ鍋',
+  },
+  {
+    name: '和食 六本木 菊水',
+    area: '六本木',
+    genre: '和食',
+    priceRange: 'high',
+    rating: 4.9,
+    phone: '03-1234-5610',
+    description: '四季を感じる懐石料理を個室でゆっくりと楽しめる名店',
+  },
+  {
+    name: 'バル 恵比寿 エル・スール',
+    area: '恵比寿',
+    genre: 'スペイン料理',
+    priceRange: 'mid',
+    rating: 4.3,
+    phone: '03-1234-5611',
+    description: '本格タパスとパエリアが楽しめるスペインバル',
+  },
+  {
+    name: '焼き鳥 渋谷 鳥吉',
+    area: '渋谷',
+    genre: '焼き鳥',
+    priceRange: 'budget',
+    rating: 4.2,
+    phone: '03-1234-5612',
+    description: '炭火で丁寧に焼く厳選地鶏の焼き鳥専門店',
+  },
+  {
+    name: 'ステーキ 六本木 グリルハウス',
+    area: '六本木',
+    genre: 'ステーキ',
+    priceRange: 'high',
+    rating: 4.6,
+    phone: '03-1234-5613',
+    description: 'A5ランク和牛のステーキを豪快に味わえる高級ステーキハウス',
+  },
+  {
+    name: 'パスタ 中目黒 ポルチーニ',
+    area: '中目黒',
+    genre: 'イタリアン',
+    priceRange: 'mid',
+    rating: 4.4,
+    phone: '03-1234-5614',
+    description: '手打ちパスタとトリュフ料理が自慢のトラットリア',
+  },
+  {
+    name: 'もつ鍋 新宿 博多亭',
+    area: '新宿',
+    genre: '鍋料理',
+    priceRange: 'budget',
+    rating: 4.3,
+    phone: '03-1234-5615',
+    description: '博多直送の新鮮もつを使ったもつ鍋専門店',
+  },
+  {
+    name: 'ワインバー 代官山 ラ・カーヴ',
+    area: '代官山',
+    genre: 'ワインバー',
+    priceRange: 'mid',
+    rating: 4.5,
+    phone: '03-1234-5616',
+    description: '世界各地のワインと合わせるシャルキュトリーが人気',
+  },
+  {
+    name: '中華 横浜中華街 龍宝',
+    area: '横浜',
+    genre: '中華料理',
+    priceRange: 'mid',
+    rating: 4.4,
+    phone: '045-1234-5617',
+    description: '本格広東料理と飲茶が楽しめる老舗中国料理店',
+  },
+  {
+    name: 'しゃぶしゃぶ 表参道 かすみ草',
+    area: '表参道',
+    genre: 'しゃぶしゃぶ',
+    priceRange: 'high',
+    rating: 4.7,
+    phone: '03-1234-5618',
+    description: '黒毛和牛を昆布だしで楽しむ上質なしゃぶしゃぶ店',
+  },
+  {
+    name: 'ピザ 渋谷 ドン・ペッペ',
+    area: '渋谷',
+    genre: 'イタリアン',
+    priceRange: 'budget',
+    rating: 4.1,
+    phone: '03-1234-5619',
+    description: '薪窯で焼くナポリ正統派ピッツァの専門店',
+  },
+  {
+    name: '日本酒バー 銀座 正宗',
+    area: '銀座',
+    genre: '和食',
+    priceRange: 'mid',
+    rating: 4.5,
+    phone: '03-1234-5620',
+    description: '全国の銘酒と合わせる創作和食のペアリングが絶品',
+  },
+  {
+    name: 'カレー 神保町 スパイス工房',
+    area: '神保町',
+    genre: 'カレー',
+    priceRange: 'budget',
+    rating: 4.3,
+    phone: '03-1234-5621',
+    description: 'スリランカ直輸入スパイスを使った本格カレー専門店',
+  },
+  {
+    name: 'フレンチ 広尾 ル・クロ',
+    area: '広尾',
+    genre: 'フレンチ',
+    priceRange: 'high',
+    rating: 4.8,
+    phone: '03-1234-5622',
+    description: '素材を活かしたモダンフレンチのオーナーシェフ店',
+  },
+  {
+    name: '焼肉 恵比寿 和牛苑',
+    area: '恵比寿',
+    genre: '焼肉',
+    priceRange: 'high',
+    rating: 4.6,
+    phone: '03-1234-5623',
+    description: '近江牛・松阪牛・神戸牛の三大和牛が楽しめる高級焼肉店',
+  },
+  {
+    name: 'ダイニングバー 下北沢 月光',
+    area: '下北沢',
+    genre: '居酒屋',
+    priceRange: 'mid',
+    rating: 4.2,
+    phone: '03-1234-5624',
+    description: 'クラフトビールと創作おつまみが楽しめるおしゃれなバー',
+  },
+]
+
+export function getRestaurantSuggestions(
+  priceRange: string,
+  count: number = 1
+): Restaurant[] {
+  const filtered = restaurants.filter((r) => r.priceRange === priceRange)
+  const pool = filtered.length > 0 ? filtered : restaurants
+
+  // Shuffle and return the requested count
+  const shuffled = [...pool].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, Math.min(count, shuffled.length))
+}
