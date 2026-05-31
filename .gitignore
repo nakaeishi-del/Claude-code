@@ -11,6 +11,7 @@ prisma/dev.db-journal
 prisma/prisma/
 
 # Environment
+.env
 .env.local
 .env.*.local
 
