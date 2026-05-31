@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import AvailabilityGrid from '@/components/AvailabilityGrid'
@@ -27,6 +27,14 @@ const priceRangeOptions = [
 ]
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center"><div className="text-gray-400 text-sm">読み込み中...</div></div>}>
+      <SettingsContent />
+    </Suspense>
+  )
+}
+
+function SettingsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const googleConnected = searchParams.get('connected') === 'google'
