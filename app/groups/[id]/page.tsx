@@ -73,6 +73,7 @@ export default function GroupDetailPage() {
   const [inviteError, setInviteError] = useState('')
   const [inviteSuccess, setInviteSuccess] = useState('')
   const [showInvite, setShowInvite] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([
@@ -153,6 +154,13 @@ export default function GroupDetailPage() {
     setInviting(false)
   }
 
+  function copyInviteLink() {
+    const url = `${window.location.origin}/join/${groupId}`
+    navigator.clipboard.writeText(url)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
@@ -222,16 +230,41 @@ export default function GroupDetailPage() {
 
           {/* Invite section */}
           {group.members.length < 4 && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+              <button
+                onClick={copyInviteLink}
+                className={clsx(
+                  'flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors',
+                  linkCopied
+                    ? 'bg-green-50 text-green-600'
+                    : 'bg-[#4ECDC4]/10 text-[#4ECDC4] hover:bg-[#4ECDC4]/20'
+                )}
+              >
+                {linkCopied ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    コピーしました！
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    招待リンクをコピー
+                  </>
+                )}
+              </button>
               {!showInvite ? (
                 <button
                   onClick={() => setShowInvite(true)}
-                  className="text-sm text-[#4ECDC4] font-medium hover:text-[#3ba89e] flex items-center gap-1"
+                  className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                   </svg>
-                  メンバーを招待
+                  メールアドレスで招待
                 </button>
               ) : (
                 <form onSubmit={handleInvite} className="space-y-2">
