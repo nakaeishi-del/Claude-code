@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import AvailabilityGrid from '@/components/AvailabilityGrid'
 import { clsx } from 'clsx'
@@ -11,6 +11,7 @@ interface User {
   name: string
   email: string
   priceRange: string
+  googleCalendarConnected: boolean
 }
 
 interface AvailabilityEntry {
@@ -27,10 +28,14 @@ const priceRangeOptions = [
 
 export default function SettingsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const googleConnected = searchParams.get('connected') === 'google'
+  const googleError = searchParams.get('error')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [disconnecting, setDisconnecting] = useState(false)
   const [priceRange, setPriceRange] = useState('mid')
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
 
@@ -57,6 +62,13 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  async function handleGoogleDisconnect() {
+    setDisconnecting(true)
+    await fetch('/api/auth/google/disconnect', { method: 'POST' })
+    setDisconnecting(false)
+    await fetchData()
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -109,6 +121,45 @@ export default function SettingsPage() {
               <div className="px-4 py-3 bg-gray-50 rounded-xl text-sm text-gray-700">{user?.email}</div>
             </div>
           </div>
+        </div>
+
+        {/* Google Calendar section */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
+          <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
+            <span className="w-1 h-5 bg-[#4285F4] rounded-full inline-block"></span>
+            Googleカレンダー連携
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">
+            連携するとカレンダーの予定を自動で読み込み、空き時間を正確に判定できます
+          </p>
+          {user?.googleCalendarConnected ? (
+            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#4285F4] flex items-center justify-center text-white text-xs font-bold">G</div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-700">連携済み</div>
+                  <div className="text-xs text-gray-400">予定を自動取得しています</div>
+                </div>
+              </div>
+              <button
+                onClick={handleGoogleDisconnect}
+                disabled={disconnecting}
+                className="text-xs text-red-500 hover:text-red-600 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+              >
+                {disconnecting ? '解除中...' : '連携を解除'}
+              </button>
+            </div>
+          ) : (
+            <a
+              href="/api/auth/google"
+              className="flex items-center justify-center gap-3 w-full py-3 rounded-xl border-2 border-gray-200 hover:border-[#4285F4] hover:bg-blue-50 transition-all group"
+            >
+              <div className="w-5 h-5 rounded-full bg-[#4285F4] flex items-center justify-center text-white text-xs font-bold">G</div>
+              <span className="text-sm font-semibold text-gray-600 group-hover:text-[#4285F4]">
+                Googleカレンダーを連携する
+              </span>
+            </a>
+          )}
         </div>
 
         {/* Price range section */}
@@ -170,6 +221,20 @@ export default function SettingsPage() {
         {saveSuccess && (
           <div className="mt-3 p-3 bg-green-50 border border-green-200 text-green-600 rounded-xl text-sm text-center">
             設定を保存しました
+          </div>
+        )}
+
+        {googleConnected && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl text-sm text-center">
+            Googleカレンダーを連携しました
+          </div>
+        )}
+
+        {googleError && (
+          <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm text-center">
+            {googleError === 'google_denied'
+              ? 'Googleカレンダーの連携がキャンセルされました'
+              : 'Googleカレンダーの連携に失敗しました。再度お試しください'}
           </div>
         )}
       </main>

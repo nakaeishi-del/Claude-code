@@ -8,18 +8,30 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String
-  priceRange   String   @default("mid") // budget | mid | high
-  createdAt    DateTime @default(now())
+  id                      String   @id @default(cuid())
+  email                   String   @unique
+  name                    String
+  passwordHash            String
+  priceRange              String   @default("mid") // budget | mid | high
+  googleCalendarConnected Boolean  @default(false)
+  createdAt               DateTime @default(now())
 
   memberships    GroupMember[]
   availability   Availability[]
   sentProposals  MeetingProposal[] @relation("ProposalCreator")
   votes          MeetingVote[]
   eventLikes     EventLike[]
+  googleToken    GoogleToken?
+}
+
+model GoogleToken {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Group {

@@ -1,10 +1,9 @@
 import { prisma } from './db'
+import { getFreeBusyForUser, isEveningBusy, BusySlot } from './google-calendar'
 
-// Find best meeting dates for a group
-// 1. Get all members' availability for next 60 days
-// 2. Score each day: +2 if all free, +1 if majority free, -2 if anyone busy
-// 3. Prefer weekends (Fri/Sat/Sun) and next 2-4 weeks
-// 4. Return top 3 candidate dates
+// Find best meeting dates for a group over the next 60 days.
+// Members with Google Calendar connected use real calendar data;
+// others use manual weekly availability from the DB.
 export async function findBestMeetingDates(groupId: string): Promise<string[]> {
   const group = await prisma.group.findUnique({
     where: { id: groupId },
@@ -12,9 +11,7 @@ export async function findBestMeetingDates(groupId: string): Promise<string[]> {
       members: {
         include: {
           user: {
-            include: {
-              availability: true,
-            },
+            include: { availability: true },
           },
         },
       },
@@ -26,70 +23,79 @@ export async function findBestMeetingDates(groupId: string): Promise<string[]> {
   const members = group.members.map((m) => m.user)
   const memberCount = members.length
 
-  const candidates: { date: string; score: number }[] = []
-
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const endDate = new Date(today)
+  endDate.setDate(today.getDate() + 61)
+
+  // Pre-fetch Google Calendar busy slots for connected members
+  const googleBusy = new Map<string, BusySlot[]>()
+  await Promise.all(
+    members
+      .filter((u) => u.googleCalendarConnected)
+      .map(async (u) => {
+        const slots = await getFreeBusyForUser(u.id, today, endDate)
+        googleBusy.set(u.id, slots)
+      })
+  )
+
+  const candidates: { date: string; score: number }[] = []
 
   for (let i = 7; i <= 60; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() + i)
     const dateStr = date.toISOString().split('T')[0]
-    const dayOfWeek = date.getDay() // 0=Sun, 6=Sat
+    const dayOfWeek = date.getDay() // 0=Sun … 6=Sat
 
     let score = 0
 
-    // Prefer weekends
+    // Weekend/evening preference
     if (dayOfWeek === 5) score += 1 // Friday
     if (dayOfWeek === 6) score += 2 // Saturday
     if (dayOfWeek === 0) score += 1 // Sunday
 
-    // Prefer 2-4 weeks out (sweet spot)
+    // Sweet spot: 2–4 weeks out
     if (i >= 14 && i <= 28) score += 2
 
     let freeCount = 0
     let busyCount = 0
 
     for (const member of members) {
-      const availability = member.availability
-
-      // Check specific date overrides first
-      const specificEntry = availability.find((a) => a.date === dateStr)
-      if (specificEntry) {
-        if (specificEntry.type === 'free') freeCount++
-        else busyCount++
-        continue
+      if (member.googleCalendarConnected) {
+        const slots = googleBusy.get(member.id) ?? []
+        if (isEveningBusy(dateStr, slots)) {
+          busyCount++
+        } else {
+          freeCount++
+        }
+      } else {
+        // Manual availability
+        const avail = member.availability
+        const specificEntry = avail.find((a) => a.date === dateStr)
+        if (specificEntry) {
+          specificEntry.type === 'free' ? freeCount++ : busyCount++
+          continue
+        }
+        const weeklyEntry = avail.find((a) => a.dayOfWeek === dayOfWeek)
+        if (weeklyEntry) {
+          weeklyEntry.type === 'free' ? freeCount++ : busyCount++
+        } else {
+          freeCount += 0.5 // unknown → slightly optimistic
+        }
       }
-
-      // Check recurring weekly availability
-      const weeklyEntry = availability.find((a) => a.dayOfWeek === dayOfWeek)
-      if (weeklyEntry) {
-        if (weeklyEntry.type === 'free') freeCount++
-        else busyCount++
-        continue
-      }
-
-      // Default: assume somewhat free
-      freeCount += 0.5
     }
 
-    // Score based on member availability
     if (busyCount === 0 && freeCount >= memberCount) {
-      score += 4 // Everyone free
+      score += 4
     } else if (busyCount === 0 && freeCount >= memberCount * 0.7) {
-      score += 2 // Most people free
-    } else if (busyCount >= 1) {
-      score -= 2 * busyCount // Penalty for busy members
+      score += 2
+    } else {
+      score -= 2 * busyCount
     }
 
-    if (score > 0) {
-      candidates.push({ date: dateStr, score })
-    }
+    if (score > 0) candidates.push({ date: dateStr, score })
   }
 
-  // Sort by score descending
   candidates.sort((a, b) => b.score - a.score)
-
-  // Return top 3 unique dates
   return candidates.slice(0, 3).map((c) => c.date)
 }
