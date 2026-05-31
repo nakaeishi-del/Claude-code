@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const tabs = [
   {
@@ -39,11 +39,7 @@ export default function BottomNav() {
   const pathname = usePathname()
   const [pendingVotes, setPendingVotes] = useState(0)
 
-  const isAuthPage =
-    pathname === '/' ||
-    pathname === '/login' ||
-    pathname === '/register' ||
-    pathname?.startsWith('/join/')
+  const isAuthPage = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname.startsWith('/join/')
 
   useEffect(() => {
     if (isAuthPage) return
@@ -60,7 +56,6 @@ export default function BottomNav() {
       <div className="flex">
         {tabs.map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(tab.href + '/')
-          const showBadge = tab.href === '/dashboard' && pendingVotes > 0
           return (
             <Link
               key={tab.href}
@@ -69,14 +64,12 @@ export default function BottomNav() {
                 active ? 'text-[#FF6B6B]' : 'text-gray-400'
               }`}
             >
-              <div className="relative">
-                {tab.icon(active)}
-                {showBadge && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF6B6B] text-white text-[9px] rounded-full flex items-center justify-center font-bold">
-                    {pendingVotes > 9 ? '9+' : pendingVotes}
-                  </span>
-                )}
-              </div>
+              {tab.href === '/dashboard' && pendingVotes > 0 && (
+                <span className="absolute top-1.5 right-1/2 translate-x-4 min-w-[16px] h-4 px-1 bg-[#FF6B6B] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {pendingVotes > 9 ? '9+' : pendingVotes}
+                </span>
+              )}
+              {tab.icon(active)}
               <span className={`text-[10px] font-semibold ${active ? 'text-[#FF6B6B]' : 'text-gray-400'}`}>
                 {tab.label}
               </span>
