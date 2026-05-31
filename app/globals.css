@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* iOS safe area for bottom navigation */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Smooth tap response on mobile */
+@layer base {
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

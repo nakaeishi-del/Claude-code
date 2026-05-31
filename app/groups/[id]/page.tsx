@@ -170,7 +170,7 @@ export default function GroupDetailPage() {
     <div className="min-h-screen bg-[#FAFAFA]">
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-6 pb-24 sm:pb-8">
         {/* Back */}
         <button
           onClick={() => router.push('/dashboard')}
@@ -234,33 +234,33 @@ export default function GroupDetailPage() {
                   メンバーを招待
                 </button>
               ) : (
-                <form onSubmit={handleInvite} className="flex gap-2">
-                  <div className="flex-1">
-                    <input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="メールアドレスで招待"
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4ECDC4] text-sm"
-                      required
-                    />
-                    {inviteError && <p className="text-xs text-red-500 mt-1">{inviteError}</p>}
-                    {inviteSuccess && <p className="text-xs text-green-500 mt-1">{inviteSuccess}</p>}
+                <form onSubmit={handleInvite} className="space-y-2">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="メールアドレスで招待"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4ECDC4] text-sm"
+                    required
+                  />
+                  {inviteError && <p className="text-xs text-red-500">{inviteError}</p>}
+                  {inviteSuccess && <p className="text-xs text-green-500">{inviteSuccess}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={inviting}
+                      className="flex-1 py-3 bg-[#4ECDC4] text-white rounded-xl text-sm font-semibold hover:bg-[#3ba89e] disabled:opacity-60 transition-colors"
+                    >
+                      {inviting ? '招待中...' : '招待する'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowInvite(false); setInviteError(''); setInviteSuccess('') }}
+                      className="px-4 py-3 text-gray-400 hover:text-gray-600 rounded-xl border border-gray-200"
+                    >
+                      キャンセル
+                    </button>
                   </div>
-                  <button
-                    type="submit"
-                    disabled={inviting}
-                    className="px-4 py-2 bg-[#4ECDC4] text-white rounded-xl text-sm font-semibold hover:bg-[#3ba89e] disabled:opacity-60 transition-colors"
-                  >
-                    {inviting ? '...' : '招待'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowInvite(false); setInviteError(''); setInviteSuccess('') }}
-                    className="px-3 py-2 text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
                 </form>
               )}
             </div>

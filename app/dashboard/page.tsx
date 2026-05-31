@@ -116,7 +116,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#FAFAFA]">
       <Navbar userName={user?.name} />
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-6 pb-24 sm:pb-8">
         {/* Welcome */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-800">
@@ -197,11 +197,21 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      {/* Create Group Modal */}
+      {/* Create Group Modal — bottom sheet on mobile, centered on desktop */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag handle — mobile only */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
+            <div className="p-6 pt-4">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-gray-800">グループを作成</h3>
                 <button

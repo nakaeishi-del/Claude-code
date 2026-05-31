@@ -143,7 +143,7 @@ export default function ProposalCard({
               onClick={() => onVote(proposal.id, v)}
               disabled={loading}
               className={clsx(
-                'flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border-2',
+                'flex-1 py-3.5 rounded-xl text-sm font-semibold transition-all border-2 active:scale-95',
                 myVote?.vote === v
                   ? v === 'accept'
                     ? 'bg-green-500 text-white border-green-500'

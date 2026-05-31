@@ -69,7 +69,7 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
         </span>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1.5">
         {DAYS.map((day, i) => {
           const dow = DAY_OF_WEEK[i]
           const type = getTypeForDay(dow)
@@ -81,12 +81,12 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
               <button
                 onClick={() => toggleDay(dow)}
                 className={clsx(
-                  'w-full aspect-square rounded-xl border-2 flex items-center justify-center text-xs font-medium transition-all hover:opacity-80',
+                  'w-full min-h-[52px] rounded-xl border-2 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95',
                   getColor(type)
                 )}
-                title={`${day}曜日: クリックして切り替え`}
+                title={`${day}曜日: タップして切り替え`}
               >
-                {getLabel(type)}
+                <span className="text-xs font-bold leading-none">{getLabel(type)}</span>
               </button>
             </div>
           )
@@ -94,7 +94,7 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
       </div>
 
       <p className="mt-3 text-xs text-gray-400">
-        クリックして空き状況を切り替えます（空き → 予定あり → 未設定）
+        タップして切り替え（空き → 予定あり → 未設定）
       </p>
     </div>
   )

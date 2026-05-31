@@ -99,7 +99,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#FAFAFA]">
       <Navbar userName={user?.name} />
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-6 pb-28 sm:pb-8">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-gray-800">設定</h1>
           <p className="text-sm text-gray-500 mt-1">プロフィールと空き時間を設定しましょう</p>
@@ -237,6 +237,17 @@ export default function SettingsPage() {
               : 'Googleカレンダーの連携に失敗しました。再度お試しください'}
           </div>
         )}
+
+        {/* Logout — mobile only (desktop uses Navbar) */}
+        <button
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' })
+            window.location.href = '/'
+          }}
+          className="sm:hidden mt-4 w-full py-3.5 rounded-xl font-semibold text-red-500 border-2 border-red-200 hover:bg-red-50 transition-colors"
+        >
+          ログアウト
+        </button>
       </main>
     </div>
   )
