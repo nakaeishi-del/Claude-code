@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "prisma generate && prisma db push --skip-generate && next build",
+  "buildCommand": "export POSTGRES_PRISMA_URL=${POSTGRES_PRISMA_URL:-$DATABASE_URL} && export POSTGRES_URL_NON_POOLING=${POSTGRES_URL_NON_POOLING:-${DATABASE_URL_UNPOOLED:-$DATABASE_URL}} && prisma generate && prisma db push --skip-generate && next build",
   "installCommand": "npm install"
 }
