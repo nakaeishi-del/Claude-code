@@ -13,6 +13,77 @@ function calcDayOfWeek(dateStr: string): string {
   return DAYS[d.getDay()] || '';
 }
 
+function parseWebinarText(text: string) {
+  const result: Partial<{
+    title: string; date: string; dayOfWeek: string;
+    startTime: string; endTime: string; speaker: string;
+    targetAudience: string; theme: string; mainProblem: string;
+    empathyText: string; takeaways: string[];
+  }> = {};
+
+  // Date: 2024年7月15日 or 7月15日
+  const dateMatch = text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/) ||
+                    text.match(/(\d{1,2})月(\d{1,2})日/);
+  if (dateMatch) {
+    const year = dateMatch.length === 4 ? parseInt(dateMatch[1]) : new Date().getFullYear();
+    const month = dateMatch.length === 4 ? parseInt(dateMatch[2]) : parseInt(dateMatch[1]);
+    const day = dateMatch.length === 4 ? parseInt(dateMatch[3]) : parseInt(dateMatch[2]);
+    result.date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    result.dayOfWeek = calcDayOfWeek(result.date);
+  }
+
+  // Day of week: （月） or (月)
+  const dowMatch = text.match(/[（(]([月火水木金土日])[）)]/);
+  if (dowMatch) result.dayOfWeek = dowMatch[1];
+
+  // Time: 11:00〜12:00 or 11:00-12:00 or 11時〜12時
+  const timeMatch = text.match(/(\d{1,2})[：:](\d{2})\s*[〜~-]\s*(\d{1,2})[：:](\d{2})/);
+  if (timeMatch) {
+    result.startTime = `${String(parseInt(timeMatch[1])).padStart(2, '0')}:${timeMatch[2]}`;
+    result.endTime = `${String(parseInt(timeMatch[3])).padStart(2, '0')}:${timeMatch[4]}`;
+  } else {
+    const times = text.match(/\d{1,2}[：:]\d{2}/g);
+    if (times && times[0]) result.startTime = times[0].replace('：', ':');
+    if (times && times[1]) result.endTime = times[1].replace('：', ':');
+  }
+
+  // Speaker: 登壇者：xxx or 講師：xxx or スピーカー：xxx
+  const speakerMatch = text.match(/(?:登壇者|講師|スピーカー)[：:]\s*(.+)/);
+  if (speakerMatch) result.speaker = speakerMatch[1].trim();
+
+  // Target audience: 対象：xxx or 対象者：xxx
+  const targetMatch = text.match(/対象者?[：:]\s*(.+)/);
+  if (targetMatch) result.targetAudience = targetMatch[1].trim();
+
+  // Theme: テーマ：xxx
+  const themeMatch = text.match(/テーマ[：:]\s*(.+)/);
+  if (themeMatch) result.theme = themeMatch[1].trim();
+
+  // Main problem: 悩み：xxx or お悩み：xxx
+  const problemMatch = text.match(/(?:お?悩み|課題)[：:]\s*(.+)/);
+  if (problemMatch) result.mainProblem = problemMatch[1].trim();
+
+  // Takeaways: bullet points with ・, •, ★, ▶, ■, →
+  const bulletLines = text.split('\n')
+    .filter(l => /^[・•★▶■→□◆◇✓✔]/.test(l.trim()))
+    .map(l => l.replace(/^[・•★▶■→□◆◇✓✔]\s*/, '').trim())
+    .filter(l => l.length > 0 && l.length < 100);
+  if (bulletLines.length > 0) result.takeaways = bulletLines.slice(0, 6);
+
+  // Title: look for line with 「」quotes or first substantial line without keywords
+  const titleMatch = text.match(/「([^」]+)」/);
+  if (titleMatch) {
+    result.title = titleMatch[1];
+  } else {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5 && l.length < 80);
+    const skipPatterns = /^(?:\d|[月火水木金土日]|http|登壇|対象|テーマ|講師|スピーカー|悩み|お申込|申込|参加費|無料)/;
+    const titleLine = lines.find(l => !skipPatterns.test(l) && !/\d{1,2}[：:]\d{2}/.test(l));
+    if (titleLine) result.title = titleLine;
+  }
+
+  return result;
+}
+
 export default function NewWebinarPage() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -40,6 +111,34 @@ export default function NewWebinarPage() {
   const [relatedArchives, setRelatedArchives] = useState<{ title: string; url: string }[]>([{ title: '', url: '' }]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pasteText, setPasteText] = useState('');
+  const [parseResult, setParseResult] = useState<string[]>([]);
+
+  const handleSmartFill = () => {
+    if (!pasteText.trim()) return;
+    const parsed = parseWebinarText(pasteText);
+    const applied: string[] = [];
+
+    setForm(prev => {
+      const next = { ...prev };
+      if (parsed.title) { next.title = parsed.title; applied.push('タイトル'); }
+      if (parsed.date) { next.date = parsed.date; applied.push('開催日'); }
+      if (parsed.dayOfWeek) { next.dayOfWeek = parsed.dayOfWeek; applied.push('曜日'); }
+      if (parsed.startTime) { next.startTime = parsed.startTime; applied.push('開始時間'); }
+      if (parsed.endTime) { next.endTime = parsed.endTime; applied.push('終了時間'); }
+      if (parsed.speaker) { next.speaker = parsed.speaker; applied.push('登壇者'); }
+      if (parsed.targetAudience) { next.targetAudience = parsed.targetAudience; applied.push('対象者'); }
+      if (parsed.theme) { next.theme = parsed.theme; applied.push('テーマ'); }
+      if (parsed.mainProblem) { next.mainProblem = parsed.mainProblem; applied.push('メインの悩み'); }
+      if (parsed.empathyText) { next.empathyText = parsed.empathyText; applied.push('共感文'); }
+      return next;
+    });
+    if (parsed.takeaways && parsed.takeaways.length > 0) {
+      setTakeaways(parsed.takeaways);
+      applied.push('当日わかること');
+    }
+    setParseResult(applied);
+  };
 
   const handleChange = (key: string, value: string) => {
     setForm(prev => {
@@ -149,6 +248,42 @@ export default function NewWebinarPage() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-800">新しいウェビナーを作成</h1>
         <p className="text-sm text-gray-500 mt-1">情報を入力すると、16個のタスクが自動生成されます</p>
+      </div>
+
+      {/* Smart paste area */}
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">✨</span>
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">テキストから自動入力</p>
+            <p className="text-xs text-emerald-600">NotionやSlackのテキストを貼り付けると自動でフォームを埋めます</p>
+          </div>
+        </div>
+        <textarea
+          value={pasteText}
+          onChange={e => { setPasteText(e.target.value); setParseResult([]); }}
+          className="w-full px-3 py-2.5 text-sm border border-emerald-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white resize-none"
+          rows={4}
+          placeholder={`例：\n読む力が受験を変える！「自分で学べる子」になるための方法\n2024年7月15日（月）11:00〜12:00\n登壇者：笹沼颯太\n対象者：中学受験を検討している保護者`}
+        />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSmartFill}
+            disabled={!pasteText.trim()}
+            className="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            自動入力する
+          </button>
+          {parseResult.length > 0 && (
+            <p className="text-xs text-emerald-700">
+              {parseResult.join('・')} を入力しました
+            </p>
+          )}
+          {pasteText.trim() && parseResult.length === 0 && (
+            <p className="text-xs text-gray-400">「自動入力する」を押すと反映されます</p>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
