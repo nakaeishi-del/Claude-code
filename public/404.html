@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    // GitHub Pages SPA redirect: save the path and send to root
+    var l = window.location;
+    var segmentCount = 1; // depth of the repo name in the URL
+    var path = l.pathname.split('/').slice(0, 1 + segmentCount).join('/');
+    var query = l.search.slice(1);
+    var hash = l.hash.slice(1);
+    var subpath = l.pathname.slice(path.length);
+    sessionStorage.setItem('ghpages_redirect', subpath + (query ? '?' + query : '') + (hash ? '#' + hash : ''));
+    l.replace(path + '/' + (query ? '?' + query : ''));
+  </script>
+</head>
+<body></body>
+</html>
