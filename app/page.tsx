@@ -29,7 +29,7 @@ export default function Home() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'ログインに失敗しました')
+        setError((data.error || 'ログインに失敗しました') + (data.detail ? `\n[${data.detail}]` : ''))
       } else {
         router.push('/dashboard')
       }
