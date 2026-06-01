@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
+import SpaRedirectHandler from '@/components/SpaRedirectHandler'
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={`${notoSansJP.className} bg-gray-50 text-gray-800 min-h-screen`}>
+        <SpaRedirectHandler />
         <Nav />
         <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           {children}
