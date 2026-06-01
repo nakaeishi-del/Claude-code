@@ -133,6 +133,25 @@ export async function ensureDbReady(): Promise<void> {
         // ignore "already exists"
       }
     }
+    await seedDemoUsers()
     initialized = true
+  }
+}
+
+async function seedDemoUsers() {
+  const { default: bcrypt } = await import('bcryptjs')
+  const demos = [
+    { id: 'demo-alice', name: 'Alice', email: 'alice@demo.com', password: 'demo1234' },
+    { id: 'demo-bob',   name: 'Bob',   email: 'bob@demo.com',   password: 'demo1234' },
+    { id: 'demo-carol', name: 'Carol', email: 'carol@demo.com', password: 'demo1234' },
+  ]
+  for (const u of demos) {
+    const hash = await bcrypt.hash(u.password, 10)
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "User" (id, email, name, "passwordHash", "priceRange", "googleCalendarConnected", "createdAt")
+       VALUES ($1, $2, $3, $4, 'mid', false, NOW())
+       ON CONFLICT (email) DO NOTHING`,
+      u.id, u.email, u.name, hash
+    )
   }
 }
