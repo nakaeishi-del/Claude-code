@@ -18,3 +18,4 @@ prisma/prisma/
 # Misc
 .DS_Store
 *.pem
+webinar-nav/dist
