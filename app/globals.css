@@ -1,17 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* iOS safe area for bottom navigation */
+:root {
+  --bg: #0D0B1E;
+  --card: rgba(255, 255, 255, 0.06);
+  --pink: #FF4ECD;
+  --purple: #7B2FFF;
+  --gold: #FFD700;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  color: #F0E6FF;
+  font-family: 'M PLUS Rounded 1c', system-ui, sans-serif;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem;
+}
+
+.glow-pink {
+  text-shadow: 0 0 10px rgba(255, 78, 205, 0.8), 0 0 20px rgba(255, 78, 205, 0.4);
+}
+
+.glow-gold {
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.shadow-pink {
+  box-shadow: 0 4px 30px rgba(255, 78, 205, 0.35);
+}
+
+.shadow-purple {
+  box-shadow: 0 4px 30px rgba(123, 47, 255, 0.35);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #FF4ECD 0%, #7B2FFF 50%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.recording-btn {
+  position: relative;
+}
+
+.recording-btn::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #FF4ECD;
+  animation: record-ring 1s ease-out infinite;
+}
+
+.recording-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid #FF4ECD;
+  animation: record-ring 1s ease-out 0.3s infinite;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(123, 47, 255, 0.5);
+  border-radius: 2px;
+}
+
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
-/* Smooth tap response on mobile */
-@layer base {
-  button, a {
-    -webkit-tap-highlight-color: transparent;
-  }
+.star-bg {
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(123, 47, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(255, 78, 205, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 215, 0, 0.03) 0%, transparent 70%);
+}
+
+textarea {
+  resize: none;
+  outline: none;
+}
+
+.mood-btn.active {
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
 }

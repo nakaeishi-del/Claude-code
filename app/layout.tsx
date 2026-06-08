@@ -1,18 +1,15 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import ClientShell from '@/components/ClientShell'
 
-const inter = Inter({ subsets: ['latin'] })
-
 export const metadata: Metadata = {
-  title: 'TomoMeet - 友達との時間を大切に',
-  description: '大切な友達との時間を、自動で作ろう。グループの空き時間を自動でマッチングする友人グループ向けスケジューラー',
+  title: '一気日記 - 声で書く、毎日の記録',
+  description: '音声入力でかんたんに日記を書こう。AIが文章を整えて、毎日の思い出を残してくれる。',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
-    title: 'TomoMeet',
+    statusBarStyle: 'black-translucent',
+    title: '一気日記',
   },
 }
 
@@ -21,17 +18,13 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#FF6B6B',
+  themeColor: '#0D0B1E',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <body className={`${inter.className} bg-[#FAFAFA] text-gray-800`}>
+      <body className="bg-[#0D0B1E] text-[#F0E6FF]">
         <ClientShell>{children}</ClientShell>
       </body>
     </html>

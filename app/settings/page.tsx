@@ -1,262 +1,187 @@
 'use client'
 
-import { Suspense, useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Navbar from '@/components/Navbar'
-import AvailabilityGrid from '@/components/AvailabilityGrid'
-import { clsx } from 'clsx'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  priceRange: string
-  googleCalendarConnected: boolean
-}
-
-interface AvailabilityEntry {
-  dayOfWeek?: number | null
-  date?: string | null
-  type: string
-}
-
-const priceRangeOptions = [
-  { value: 'budget', label: 'リーズナブル', sub: '〜¥3,000' },
-  { value: 'mid', label: 'スタンダード', sub: '¥3,000〜¥8,000' },
-  { value: 'high', label: 'プレミアム', sub: '¥8,000〜' },
-]
+import { useState, useEffect } from 'react'
+import { getAllEntries, deleteEntry } from '@/lib/storage'
 
 export default function SettingsPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center"><div className="text-gray-400 text-sm">読み込み中...</div></div>}>
-      <SettingsContent />
-    </Suspense>
-  )
-}
-
-function SettingsContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const googleConnected = searchParams.get('connected') === 'google'
-  const googleError = searchParams.get('error')
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  const [disconnecting, setDisconnecting] = useState(false)
-  const [priceRange, setPriceRange] = useState('mid')
-  const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
-
-  const fetchData = useCallback(async () => {
-    const [meRes, availRes] = await Promise.all([
-      fetch('/api/auth/me'),
-      fetch('/api/availability'),
-    ])
-
-    if (!meRes.ok) {
-      router.push('/')
-      return
-    }
-
-    const meData = await meRes.json()
-    const availData = await availRes.json()
-
-    setUser(meData.user)
-    setPriceRange(meData.user.priceRange)
-    setAvailability(availData.availability || [])
-    setLoading(false)
-  }, [router])
+  const [username, setUsername] = useState('')
+  const [sharingEnabled, setSharingEnabled] = useState(false)
+  const [entryCount, setEntryCount] = useState(0)
+  const [saved, setSaved] = useState(false)
+  const [confirmClear, setConfirmClear] = useState(false)
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    setUsername(localStorage.getItem('ikki-username') || '')
+    setSharingEnabled(localStorage.getItem('ikki-sharing') === 'true')
+    getAllEntries().then((entries) => setEntryCount(entries.length))
+  }, [])
 
-  async function handleGoogleDisconnect() {
-    setDisconnecting(true)
-    await fetch('/api/auth/google/disconnect', { method: 'POST' })
-    setDisconnecting(false)
-    await fetchData()
+  function handleSave() {
+    const trimmed = username.trim().slice(0, 20)
+    if (!trimmed) { alert('ニックネームを入力してください'); return }
+    localStorage.setItem('ikki-username', trimmed)
+    localStorage.setItem('ikki-sharing', sharingEnabled ? 'true' : 'false')
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
-  async function handleSave() {
-    setSaving(true)
-    setSaveSuccess(false)
-
-    await Promise.all([
-      fetch('/api/availability', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ availability }),
-      }),
-    ])
-
-    setSaving(false)
-    setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 3000)
+  async function handleExport() {
+    const entries = await getAllEntries()
+    const json = JSON.stringify(entries, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ikki-diary-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-        <div className="text-gray-400 text-sm">読み込み中...</div>
-      </div>
-    )
+  async function handleClearAll() {
+    if (!confirmClear) { setConfirmClear(true); return }
+    const entries = await getAllEntries()
+    await Promise.all(entries.map((e) => deleteEntry(e.id)))
+    setEntryCount(0)
+    setConfirmClear(false)
+    alert('全データを削除しました')
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <Navbar userName={user?.name} />
+    <div
+      className="min-h-screen pb-24"
+      style={{ background: 'linear-gradient(160deg, #0D0B1E 0%, #1A0540 50%, #0D1520 100%)' }}
+    >
+      {/* Header */}
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-2xl font-black gradient-text">⚙️ 設定</h1>
+        <p className="text-xs text-[#9D8EBF] mt-1">一気日記をカスタマイズしよう</p>
+      </div>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 pb-28 sm:pb-8">
-        <div className="mb-6">
-          <h1 className="text-xl font-bold text-gray-800">設定</h1>
-          <p className="text-sm text-gray-500 mt-1">プロフィールと空き時間を設定しましょう</p>
-        </div>
-
-        {/* Profile section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
-          <h2 className="text-base font-bold text-gray-700 mb-4 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#FF6B6B] rounded-full inline-block"></span>
-            プロフィール
-          </h2>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">お名前</label>
-              <div className="px-4 py-3 bg-gray-50 rounded-xl text-sm text-gray-700">{user?.name}</div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">メールアドレス</label>
-              <div className="px-4 py-3 bg-gray-50 rounded-xl text-sm text-gray-700">{user?.email}</div>
-            </div>
+      <div className="px-4 space-y-4">
+        {/* Profile */}
+        <div className="glass-card p-5">
+          <h2 className="text-sm font-black text-[#F0E6FF] mb-4">👤 プロフィール</h2>
+          <div>
+            <label className="text-xs text-[#9D8EBF] font-bold mb-2 block">ニックネーム（20文字まで）</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.slice(0, 20))}
+              placeholder="あなたのニックネーム"
+              className="w-full px-4 py-3 rounded-xl text-sm text-[#F0E6FF] placeholder-[#4A3D6B] font-medium"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            />
+            <p className="text-xs text-[#9D8EBF] mt-1.5">
+              みんなの日記でシェアするときに表示される名前です
+            </p>
           </div>
         </div>
 
-        {/* Google Calendar section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
-          <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#4285F4] rounded-full inline-block"></span>
-            Googleカレンダー連携
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">
-            連携するとカレンダーの予定を自動で読み込み、空き時間を正確に判定できます
-          </p>
-          {user?.googleCalendarConnected ? (
-            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#4285F4] flex items-center justify-center text-white text-xs font-bold">G</div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-700">連携済み</div>
-                  <div className="text-xs text-gray-400">予定を自動取得しています</div>
-                </div>
+        {/* Sharing */}
+        <div className="glass-card p-5">
+          <h2 className="text-sm font-black text-[#F0E6FF] mb-4">🌐 シェア設定</h2>
+          <div
+            className="flex items-center justify-between p-4 rounded-xl"
+            style={{ background: 'rgba(255,255,255,0.04)' }}
+          >
+            <div>
+              <div className="text-sm font-bold text-[#F0E6FF]">自動シェア</div>
+              <div className="text-xs text-[#9D8EBF] mt-0.5">
+                保存した日記を自動でみんなに公開する
               </div>
-              <button
-                onClick={handleGoogleDisconnect}
-                disabled={disconnecting}
-                className="text-xs text-red-500 hover:text-red-600 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
-              >
-                {disconnecting ? '解除中...' : '連携を解除'}
-              </button>
             </div>
-          ) : (
-            <a
-              href="/api/auth/google"
-              className="flex items-center justify-center gap-3 w-full py-3 rounded-xl border-2 border-gray-200 hover:border-[#4285F4] hover:bg-blue-50 transition-all group"
+            <button
+              onClick={() => setSharingEnabled(!sharingEnabled)}
+              className="relative w-12 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+              style={{
+                background: sharingEnabled
+                  ? 'linear-gradient(90deg, #00FF9F, #00CC80)'
+                  : 'rgba(255,255,255,0.1)',
+              }}
             >
-              <div className="w-5 h-5 rounded-full bg-[#4285F4] flex items-center justify-center text-white text-xs font-bold">G</div>
-              <span className="text-sm font-semibold text-gray-600 group-hover:text-[#4285F4]">
-                Googleカレンダーを連携する
-              </span>
-            </a>
-          )}
-        </div>
-
-        {/* Price range section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
-          <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#FF6B6B] rounded-full inline-block"></span>
-            価格帯設定
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">グループ提案時のレストラン価格帯の基準になります</p>
-          <div className="grid grid-cols-3 gap-3">
-            {priceRangeOptions.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setPriceRange(opt.value)}
-                className={clsx(
-                  'p-4 rounded-xl border-2 text-center transition-all',
-                  priceRange === opt.value
-                    ? 'border-[#FF6B6B] bg-[#FF6B6B]/5'
-                    : 'border-gray-200 hover:border-gray-300'
-                )}
-              >
-                <div className={clsx('text-sm font-semibold', priceRange === opt.value ? 'text-[#FF6B6B]' : 'text-gray-700')}>
-                  {opt.label}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">{opt.sub}</div>
-              </button>
-            ))}
+              <div
+                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-300"
+                style={{ left: sharingEnabled ? 'calc(100% - 22px)' : '2px' }}
+              />
+            </button>
           </div>
-        </div>
-
-        {/* Availability section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#4ECDC4] rounded-full inline-block"></span>
-            空き時間設定
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">
-            週間の定期的な空き状況を設定してください。自動スケジューリングに使用されます。
-          </p>
-          <AvailabilityGrid
-            availability={availability}
-            onChange={setAvailability}
-          />
+          {sharingEnabled && (
+            <p className="text-xs text-[#00FF9F] mt-2 ml-1">
+              ✓ 日記を保存するとみんなのページに表示されます
+            </p>
+          )}
         </div>
 
         {/* Save button */}
         <button
           onClick={handleSave}
-          disabled={saving}
-          className={clsx(
-            'w-full py-3.5 rounded-xl font-bold text-white transition-all',
-            saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#FF6B6B] hover:bg-[#e55a5a] shadow-md'
-          )}
-        >
-          {saving ? '保存中...' : '設定を保存'}
-        </button>
-
-        {saveSuccess && (
-          <div className="mt-3 p-3 bg-green-50 border border-green-200 text-green-600 rounded-xl text-sm text-center">
-            設定を保存しました
-          </div>
-        )}
-
-        {googleConnected && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl text-sm text-center">
-            Googleカレンダーを連携しました
-          </div>
-        )}
-
-        {googleError && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm text-center">
-            {googleError === 'google_denied'
-              ? 'Googleカレンダーの連携がキャンセルされました'
-              : 'Googleカレンダーの連携に失敗しました。再度お試しください'}
-          </div>
-        )}
-
-        {/* Logout — mobile only (desktop uses Navbar) */}
-        <button
-          onClick={async () => {
-            await fetch('/api/auth/logout', { method: 'POST' })
-            window.location.href = '/'
+          className="w-full py-4 rounded-2xl font-black text-white transition-all"
+          style={{
+            background: saved
+              ? 'linear-gradient(135deg, #00FF9F, #00CC80)'
+              : 'linear-gradient(135deg, #FF4ECD, #7B2FFF)',
+            boxShadow: '0 4px 20px rgba(255,78,205,0.4)',
           }}
-          className="sm:hidden mt-4 w-full py-3.5 rounded-xl font-semibold text-red-500 border-2 border-red-200 hover:bg-red-50 transition-colors"
         >
-          ログアウト
+          {saved ? '✓ 保存しました！' : '設定を保存'}
         </button>
-      </main>
+
+        {/* Data & Stats */}
+        <div className="glass-card p-5">
+          <h2 className="text-sm font-black text-[#F0E6FF] mb-4">📊 データ</h2>
+          <div className="flex items-center justify-between py-3"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="text-sm text-[#9D8EBF]">日記の総数</span>
+            <span className="font-black text-[#F0E6FF]">{entryCount}件</span>
+          </div>
+          <div className="flex items-center justify-between py-3"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="text-sm text-[#9D8EBF]">ストレージ</span>
+            <span className="text-xs font-bold text-[#9D8EBF]">端末に保存中</span>
+          </div>
+
+          {/* Export */}
+          <button
+            onClick={handleExport}
+            className="w-full mt-4 py-3 rounded-xl text-sm font-bold transition-all"
+            style={{ background: 'rgba(123,47,255,0.2)', color: '#C084FC', border: '1px solid rgba(123,47,255,0.3)' }}
+          >
+            📥 全データをエクスポート (JSON)
+          </button>
+
+          {/* Clear data */}
+          <button
+            onClick={handleClearAll}
+            className="w-full mt-2 py-3 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: confirmClear ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.04)',
+              color: confirmClear ? '#F87171' : '#9D8EBF',
+              border: `1px solid ${confirmClear ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.06)'}`,
+            }}
+          >
+            {confirmClear ? '⚠️ もう一度タップで全削除（元に戻せません）' : '🗑️ 全データを削除'}
+          </button>
+          {confirmClear && (
+            <button
+              onClick={() => setConfirmClear(false)}
+              className="w-full mt-1 py-2 text-xs text-[#9D8EBF]"
+            >
+              キャンセル
+            </button>
+          )}
+        </div>
+
+        {/* App info */}
+        <div className="glass-card p-5">
+          <h2 className="text-sm font-black text-[#F0E6FF] mb-3">ℹ️ アプリについて</h2>
+          <div className="space-y-2 text-xs text-[#9D8EBF]">
+            <p>✦ 一気日記 v1.0</p>
+            <p>音声入力でかんたんに日記を書こう。</p>
+            <p>日記はこの端末に永続的に保存されます。</p>
+            <p>シェア機能を使うとサーバーに保存されます。</p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
