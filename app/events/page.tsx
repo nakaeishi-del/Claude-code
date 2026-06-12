@@ -128,11 +128,7 @@ export default function EventsPage() {
   }
 
   return (
-<<<<<<< Updated upstream
-    <div className="min-h-screen bg-[#FAFAFA]">
-=======
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
->>>>>>> Stashed changes
       <Navbar />
 
       <main className="max-w-2xl mx-auto px-4 pt-7 pb-24">
@@ -141,20 +137,12 @@ export default function EventsPage() {
           <p className="text-sm mt-1 font-bold" style={{ color: '#9B8B7E' }}>行きたいイベントに♡して友達を誘おう</p>
         </div>
 
-        {/* Month navigation */}
-<<<<<<< Updated upstream
-        <div className="flex items-center justify-between mb-4 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-sm">
-          <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-gray-50 active:bg-gray-100">
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-=======
         <div className="flex items-center justify-between mb-4 bg-white rounded-2xl px-4 py-3"
           style={{ border: '1.5px solid #EDE8E3' }}>
           <button onClick={() => setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
             className="p-1.5 rounded-xl transition-colors" style={{ color: '#9B8B7E' }}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
->>>>>>> Stashed changes
             </svg>
           </button>
           <span className="font-black" style={{ color: '#2D1B0E' }}>{year}年{month}月</span>
@@ -166,42 +154,22 @@ export default function EventsPage() {
           </button>
         </div>
 
-        {/* Genre tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-5" style={{ scrollbarWidth: 'none' }}>
           {GENRES.map((g) => (
-<<<<<<< Updated upstream
-            <button
-              key={g.value}
-              onClick={() => setActiveGenre(g.value)}
-              className={clsx(
-                'flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
-                activeGenre === g.value
-                  ? 'bg-[#4ECDC4] text-white'
-                  : 'bg-white text-gray-600 border border-gray-200'
-              )}
-            >
-=======
             <button key={g.value} onClick={() => setActiveGenre(g.value)}
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-black transition-all"
               style={activeGenre === g.value
                 ? { background: '#F07050', color: 'white' }
                 : { background: 'white', color: '#9B8B7E', border: '1.5px solid #EDE8E3' }}>
->>>>>>> Stashed changes
               {g.label}
             </button>
           ))}
         </div>
 
-        {/* Event list */}
         {loading ? (
-<<<<<<< Updated upstream
-          <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-2 border-[#4ECDC4] border-t-transparent rounded-full animate-spin" />
-=======
           <div className="flex flex-col items-center py-16 gap-3">
             <BearMascot size={70} mood="sleep" animate />
             <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
->>>>>>> Stashed changes
           </div>
         ) : sortedDates.length === 0 ? (
           <div className="flex flex-col items-center py-16 gap-3">
@@ -216,20 +184,6 @@ export default function EventsPage() {
                   {formatDate(date)}
                 </div>
                 <div className="space-y-2">
-<<<<<<< Updated upstream
-                  {eventsByDate[date].map((event) => (
-                    <div key={event.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center text-xl flex-shrink-0">
-                          {genreEmoji[event.genre] || '🎪'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-gray-800 text-sm leading-snug">{event.title}</div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                {event.venue}（{event.area}）
-=======
                   {eventsByDate[date].map((event) => {
                     const gs = genreStyle[event.genre] || { color: '#9B8B7E', bg: '#F5F0EB' }
                     return (
@@ -250,7 +204,6 @@ export default function EventsPage() {
                                 {event.description && (
                                   <p className="text-xs mt-1 line-clamp-1 font-bold" style={{ color: '#C8B8A8' }}>{event.description}</p>
                                 )}
->>>>>>> Stashed changes
                               </div>
                               <button onClick={() => toggleLike(event)}
                                 className="flex-shrink-0 flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all active:scale-90"
@@ -282,44 +235,6 @@ export default function EventsPage() {
                                 </button>
                               )}
                             </div>
-<<<<<<< Updated upstream
-                            <button
-                              onClick={() => toggleLike(event)}
-                              className={clsx(
-                                'flex-shrink-0 flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all active:scale-90',
-                                event.liked ? 'text-[#FF6B6B]' : 'text-gray-300 hover:text-gray-400'
-                              )}
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill={event.liked ? 'currentColor' : 'none'}
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                              {event.likeCount > 0 && (
-                                <span className="text-[10px] leading-none">{event.likeCount}</span>
-                              )}
-                            </button>
-                          </div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className={clsx('text-xs px-2 py-0.5 rounded-full font-medium', genreColors[event.genre] || 'bg-gray-100 text-gray-600')}>
-                              {genreLabels[event.genre] || event.genre}
-                            </span>
-                            {event.liked && (
-                              <button
-                                onClick={() => openInvite(event)}
-                                className="text-xs text-[#4ECDC4] font-medium flex items-center gap-1 hover:text-[#3bb8b0]"
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                友達を誘う
-                              </button>
-                            )}
-=======
->>>>>>> Stashed changes
                           </div>
                         </div>
                       </div>
@@ -332,7 +247,6 @@ export default function EventsPage() {
         )}
       </main>
 
-      {/* Invite bottom sheet */}
       {inviteEvent && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setInviteEvent(null)} />
@@ -359,38 +273,20 @@ export default function EventsPage() {
                 </div>
                 {groups.length === 0 ? (
                   <div className="text-center py-6">
-<<<<<<< Updated upstream
-                    <p className="text-sm text-gray-500">グループがありません</p>
-                    <button
-                      onClick={() => router.push('/dashboard')}
-                      className="mt-3 text-sm text-[#4ECDC4] font-medium"
-                    >
-=======
                     <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>グループがありません</p>
                     <button onClick={() => router.push('/dashboard')}
                       className="mt-3 text-sm font-black" style={{ color: '#F07050' }}>
->>>>>>> Stashed changes
                       グループを作成する →
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {groups.map((group) => (
-<<<<<<< Updated upstream
-                      <button
-                        key={group.id}
-                        onClick={() => inviteGroup(group.id)}
-                        disabled={inviting}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 active:bg-gray-100 text-left transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-[#4ECDC4]/15 flex items-center justify-center text-base font-bold text-[#4ECDC4] flex-shrink-0">
-=======
                       <button key={group.id} onClick={() => inviteGroup(group.id)} disabled={inviting}
                         className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all"
                         style={{ border: '1.5px solid #EDE8E3' }}>
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-base font-black text-white flex-shrink-0"
                           style={{ background: '#F07050' }}>
->>>>>>> Stashed changes
                           {group.name[0]}
                         </div>
                         <span className="text-sm font-black" style={{ color: '#2D1B0E' }}>{group.name}</span>

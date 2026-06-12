@@ -1,7 +1,5 @@
 'use client'
 
-import { clsx } from 'clsx'
-
 const DAYS = ['月', '火', '水', '木', '金', '土', '日']
 const DAY_OF_WEEK = [1, 2, 3, 4, 5, 6, 0]
 
@@ -33,38 +31,15 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
     }
   }
 
-<<<<<<< Updated upstream
-  function getColor(type: 'free' | 'busy' | null): string {
-    if (type === 'free') return 'bg-[#4ECDC4] text-white border-[#4ECDC4]'
-    if (type === 'busy') return 'bg-[#FF6B6B] text-white border-[#FF6B6B]'
-    return 'bg-gray-50 text-gray-400 border-gray-200'
-  }
-
-  function getLabel(type: 'free' | 'busy' | null): string {
-    if (type === 'free') return '空き'
-    if (type === 'busy') return '予定'
-    return '―'
-  }
-
-=======
->>>>>>> Stashed changes
   return (
     <div>
       <div className="flex items-center gap-4 mb-3 text-xs" style={{ color: '#B8A898' }}>
         <span className="flex items-center gap-1">
-<<<<<<< Updated upstream
-          <span className="w-3 h-3 rounded bg-[#4ECDC4] inline-block"></span>
-          いつも空いている
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-[#FF6B6B] inline-block"></span>
-=======
           <span className="w-3 h-3 rounded-md inline-block" style={{ background: '#7AC8A0' }} />
           いつも空き
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-md inline-block" style={{ background: '#F07050' }} />
->>>>>>> Stashed changes
           予定あり
         </span>
         <span className="flex items-center gap-1">
@@ -94,7 +69,7 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
                 style={{ background: bg, border: `1.5px solid ${border}` }}
                 title={`${day}曜日: タップして切り替え`}
               >
-                <span className="text-xs font-black">
+                <span className="text-xs font-black" style={{ color: type !== null ? '#fff' : '#9B8B7E' }}>
                   {type === 'free' ? '空き' : type === 'busy' ? '予定' : '―'}
                 </span>
               </button>

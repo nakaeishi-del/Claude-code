@@ -55,19 +55,7 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, onV
     : '#F5C4B0'
 
   return (
-<<<<<<< Updated upstream
-    <div className={clsx(
-      'bg-white rounded-xl border-2 p-5',
-      proposal.status === 'confirmed'
-        ? 'border-green-200'
-        : proposal.status === 'cancelled'
-        ? 'border-gray-200'
-        : 'border-[#FF6B6B]/30'
-    )}>
-      {/* Header */}
-=======
     <div className="bg-white rounded-2xl p-5" style={{ border: `1.5px solid ${borderColor}` }}>
->>>>>>> Stashed changes
       <div className="flex items-start justify-between mb-4">
         <div>
           <span className="inline-flex text-[11px] px-2.5 py-1 rounded-full font-black mb-2"
@@ -80,17 +68,10 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, onV
         <div className="text-xs font-bold" style={{ color: '#C8B8A8' }}>{proposal.createdBy.name}が提案</div>
       </div>
 
-<<<<<<< Updated upstream
-      {/* Restaurant info */}
-      <div className="bg-[#FAFAFA] rounded-xl p-4 mb-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-[#FF6B6B]/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
-=======
       <div className="rounded-2xl p-4 mb-4" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3' }}>
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
             style={{ background: '#FFF0EC' }}>
->>>>>>> Stashed changes
             🍽️
           </div>
           <div className="flex-1 min-w-0">
@@ -98,11 +79,7 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, onV
             <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>
               {proposal.restaurantArea} · {proposal.restaurantGenre}
             </div>
-<<<<<<< Updated upstream
-            <div className="text-xs text-[#FF6B6B] font-medium mt-1">{proposal.estimatedCost}</div>
-=======
             <div className="text-xs mt-1 font-black" style={{ color: '#F07050' }}>{proposal.estimatedCost}</div>
->>>>>>> Stashed changes
           </div>
         </div>
       </div>

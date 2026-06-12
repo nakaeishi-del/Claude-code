@@ -28,15 +28,11 @@ const priceRangeOptions = [
 
 export default function SettingsPage() {
   return (
-<<<<<<< Updated upstream
-    <Suspense fallback={<div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center"><div className="text-gray-400 text-sm">読み込み中...</div></div>}>
-=======
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
         <BearMascot size={70} mood="sleep" animate />
       </div>
     }>
->>>>>>> Stashed changes
       <SettingsContent />
     </Suspense>
   )
@@ -102,26 +98,17 @@ function SettingsContent() {
 
   if (loading) {
     return (
-<<<<<<< Updated upstream
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-        <div className="text-gray-400 text-sm">読み込み中...</div>
-=======
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
         <div className="flex flex-col items-center gap-3">
           <BearMascot size={80} mood="sleep" animate />
           <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
         </div>
->>>>>>> Stashed changes
       </div>
     )
   }
 
   return (
-<<<<<<< Updated upstream
-    <div className="min-h-screen bg-[#FAFAFA]">
-=======
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
->>>>>>> Stashed changes
       <Navbar userName={user?.name} />
 
       <main className="max-w-2xl mx-auto px-4 pt-7 pb-28 sm:pb-10 space-y-5">
@@ -130,20 +117,9 @@ function SettingsContent() {
           <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>プロフィールと空き時間を設定しよう</p>
         </div>
 
-<<<<<<< Updated upstream
-        {/* Profile section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
-          <h2 className="text-base font-bold text-gray-700 mb-4 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#FF6B6B] rounded-full inline-block"></span>
-            プロフィール
-          </h2>
-          <div className="space-y-3">
-=======
-        {/* Profile */}
         <Card>
           <SLabel>プロフィール</SLabel>
           <div className="mt-4 space-y-3">
->>>>>>> Stashed changes
             <div>
               <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>お名前</label>
               <div className="px-4 py-3 rounded-2xl text-sm font-bold" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}>
@@ -159,7 +135,6 @@ function SettingsContent() {
           </div>
         </Card>
 
-        {/* Google Calendar */}
         <Card>
           <SLabel>Googleカレンダー連携</SLabel>
           <p className="text-xs mt-1 mb-4 font-bold" style={{ color: '#C8B8A8' }}>
@@ -190,33 +165,6 @@ function SettingsContent() {
           )}
         </Card>
 
-<<<<<<< Updated upstream
-        {/* Price range section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
-          <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#FF6B6B] rounded-full inline-block"></span>
-            価格帯設定
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">グループ提案時のレストラン価格帯の基準になります</p>
-          <div className="grid grid-cols-3 gap-3">
-            {priceRangeOptions.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setPriceRange(opt.value)}
-                className={clsx(
-                  'p-4 rounded-xl border-2 text-center transition-all',
-                  priceRange === opt.value
-                    ? 'border-[#FF6B6B] bg-[#FF6B6B]/5'
-                    : 'border-gray-200 hover:border-gray-300'
-                )}
-              >
-                <div className={clsx('text-sm font-semibold', priceRange === opt.value ? 'text-[#FF6B6B]' : 'text-gray-700')}>
-                  {opt.label}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">{opt.sub}</div>
-=======
-        {/* Price range */}
         <Card>
           <SLabel>価格帯</SLabel>
           <p className="text-xs mt-1 mb-4 font-bold" style={{ color: '#C8B8A8' }}>グループ提案時のレストランの基準になります</p>
@@ -229,46 +177,22 @@ function SettingsContent() {
                   : { border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}>
                 <p className="text-xs font-black" style={{ color: priceRange === opt.value ? '#F07050' : '#6B5B4E' }}>{opt.label}</p>
                 <p className="text-xs mt-0.5 font-bold" style={{ color: '#B8A898' }}>{opt.sub}</p>
->>>>>>> Stashed changes
               </button>
             ))}
           </div>
         </Card>
 
-<<<<<<< Updated upstream
-        {/* Availability section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#4ECDC4] rounded-full inline-block"></span>
-            空き時間設定
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">
-=======
-        {/* Availability */}
         <Card>
           <SLabel>空き時間</SLabel>
           <p className="text-xs mt-1 mb-4 font-bold" style={{ color: '#C8B8A8' }}>
->>>>>>> Stashed changes
             週間の定期的な空き状況を設定してください。自動スケジューリングに使用されます。
           </p>
           <AvailabilityGrid availability={availability} onChange={setAvailability} />
         </Card>
 
-<<<<<<< Updated upstream
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className={clsx(
-            'w-full py-3.5 rounded-xl font-bold text-white transition-all',
-            saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#FF6B6B] hover:bg-[#e55a5a] shadow-md'
-          )}
-        >
-=======
         <button onClick={handleSave} disabled={saving}
           className="w-full py-4 rounded-2xl text-white font-black text-sm disabled:opacity-50"
           style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
->>>>>>> Stashed changes
           {saving ? '保存中...' : '設定を保存'}
         </button>
 

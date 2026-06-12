@@ -12,6 +12,9 @@ interface Group {
   members: { user: { id: string; name: string; email: string } }[]
   latestProposal?: { id: string; status: string; proposedDate: string; restaurantName: string; votes: { vote: string }[] } | null
 }
+interface Activity {
+  id: string; type: string; groupId: string; groupName: string; text: string; createdAt: string
+}
 const priceRangeOptions = [
   { value: 'budget', label: 'リーズナブル', sub: '〜¥3,000' },
   { value: 'mid', label: 'スタンダード', sub: '¥3,000〜¥8,000' },
@@ -22,6 +25,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [groups, setGroups] = useState<Group[]>([])
+  const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -29,10 +33,13 @@ export default function DashboardPage() {
   const [form, setForm] = useState({ name: '', description: '', priceRange: 'mid' })
 
   const fetchData = useCallback(async () => {
-    const [meRes, groupsRes] = await Promise.all([fetch('/api/auth/me'), fetch('/api/groups')])
+    const [meRes, groupsRes, activityRes] = await Promise.all([
+      fetch('/api/auth/me'), fetch('/api/groups'), fetch('/api/me/activity')
+    ])
     if (!meRes.ok) { router.push('/'); return }
     setUser((await meRes.json()).user)
     setGroups((await groupsRes.json()).groups || [])
+    if (activityRes.ok) setActivities((await activityRes.json()).activities || [])
     setLoading(false)
   }, [router])
 
@@ -109,6 +116,27 @@ export default function DashboardPage() {
               グループを作る
             </button>
           </div>
+
+          {/* Activity feed — shown only when groups exist */}
+          {groups.length > 0 && activities.length > 0 && (
+            <div className="mb-6 bg-white rounded-2xl p-5" style={{ border: '1.5px solid #EDE8E3' }}>
+              <SLabel>最近のアクティビティ</SLabel>
+              <div className="mt-3 space-y-3">
+                {activities.slice(0, 5).map((a) => (
+                  <div key={a.id} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 mt-0.5"
+                      style={{ background: a.type === 'proposal' ? '#FFF0EC' : a.type === 'vote' ? '#F0FAF2' : a.type === 'message' ? '#EEF3FC' : '#F5EEFA' }}>
+                      {a.type === 'proposal' ? '✨' : a.type === 'vote' ? '🗳️' : a.type === 'message' ? '💬' : '👋'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold leading-relaxed" style={{ color: '#2D1B0E' }}>{a.text}</p>
+                      <p className="text-[10px] font-bold mt-0.5" style={{ color: '#C8B8A8' }}>{a.groupName}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {groups.length === 0 ? (
             <div className="flex flex-col items-center py-14 rounded-3xl" style={{ background: '#FFFFFF', border: '1.5px dashed #EDE8E3' }}>

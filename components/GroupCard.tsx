@@ -38,16 +38,6 @@ function getInitials(name: string) {
   return name.charAt(0)
 }
 
-<<<<<<< Updated upstream
-const avatarColors = [
-  'bg-[#FF6B6B]',
-  'bg-[#4ECDC4]',
-  'bg-yellow-400',
-  'bg-purple-400',
-]
-
-=======
->>>>>>> Stashed changes
 export default function GroupCard({ group }: GroupCardProps) {
   const members = group.members || []
   const proposal = group.latestProposal
@@ -60,12 +50,8 @@ export default function GroupCard({ group }: GroupCardProps) {
 
   return (
     <Link href={`/groups/${group.id}`}>
-<<<<<<< Updated upstream
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow cursor-pointer">
-=======
       <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-0.5 cursor-pointer"
         style={{ border: '1.5px solid #EDE8E3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
->>>>>>> Stashed changes
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0 mr-2">
             <h3 className="font-black text-base truncate" style={{ color: '#2D1B0E' }}>{group.name}</h3>
