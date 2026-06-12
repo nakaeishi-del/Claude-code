@@ -22,7 +22,9 @@ interface ProposalCardProps {
   }
   currentUserId: string
   memberCount: number
+  myRole?: string
   onVote: (proposalId: string, vote: 'accept' | 'decline' | 'maybe') => void
+  onCancel?: (proposalId: string) => void
   loading?: boolean
 }
 
@@ -38,7 +40,7 @@ const voteConfig = {
   decline: { label: '欠席',     icon: '✕', active: { bg: '#F07050', color: '#fff' } },
 }
 
-export default function ProposalCard({ proposal, currentUserId, memberCount, onVote, loading }: ProposalCardProps) {
+export default function ProposalCard({ proposal, currentUserId, memberCount, myRole, onVote, onCancel, loading }: ProposalCardProps) {
   const myVote = proposal.votes.find((v) => v.userId === currentUserId)
   const acceptCount = proposal.votes.filter((v) => v.vote === 'accept').length
   const declineCount = proposal.votes.filter((v) => v.vote === 'decline').length
@@ -99,26 +101,38 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, onV
       </div>
 
       {proposal.status === 'pending' && (
-        <div className="flex gap-2">
-          {(['accept', 'maybe', 'decline'] as const).map((v) => {
-            const cfg = voteConfig[v]
-            const isActive = myVote?.vote === v
-            return (
-              <button
-                key={v}
-                onClick={() => onVote(proposal.id, v)}
-                disabled={loading}
-                className="flex-1 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-95"
-                style={isActive
-                  ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}` }
-                  : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3', opacity: loading ? 0.5 : 1 }
-                }
-              >
-                <span className="mr-1">{cfg.icon}</span>{cfg.label}
-              </button>
-            )
-          })}
-        </div>
+        <>
+          <div className="flex gap-2">
+            {(['accept', 'maybe', 'decline'] as const).map((v) => {
+              const cfg = voteConfig[v]
+              const isActive = myVote?.vote === v
+              return (
+                <button
+                  key={v}
+                  onClick={() => onVote(proposal.id, v)}
+                  disabled={loading}
+                  className="flex-1 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-95"
+                  style={isActive
+                    ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}` }
+                    : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3', opacity: loading ? 0.5 : 1 }
+                  }
+                >
+                  <span className="mr-1">{cfg.icon}</span>{cfg.label}
+                </button>
+              )
+            })}
+          </div>
+          {onCancel && (proposal.createdBy.id === currentUserId || myRole === 'owner') && (
+            <button
+              onClick={() => onCancel(proposal.id)}
+              disabled={loading}
+              className="w-full mt-2 py-2 rounded-2xl text-xs font-black transition-all"
+              style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}
+            >
+              提案をキャンセル
+            </button>
+          )}
+        </>
       )}
 
       {proposal.votes.length > 0 && (

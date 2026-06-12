@@ -68,3 +68,41 @@ export async function GET(
 
   return NextResponse.json({ group: groupWithFlags, myRole: membership.role })
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const userId = await getSession(request)
+  if (!userId) {
+    return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
+  }
+
+  const { id } = await params
+
+  const membership = await prisma.groupMember.findUnique({
+    where: { groupId_userId: { groupId: id, userId } },
+  })
+
+  if (!membership) {
+    return NextResponse.json({ error: 'このグループへのアクセス権限がありません' }, { status: 403 })
+  }
+
+  const body = await request.json().catch(() => ({})) as { action?: string }
+
+  if (body.action === 'leave') {
+    if (membership.role === 'owner') {
+      return NextResponse.json({ error: 'オーナーはグループを退出できません。グループを削除してください。' }, { status: 400 })
+    }
+    await prisma.groupMember.delete({ where: { groupId_userId: { groupId: id, userId } } })
+    return NextResponse.json({ ok: true })
+  }
+
+  // Delete group — owner only
+  if (membership.role !== 'owner') {
+    return NextResponse.json({ error: 'グループを削除できるのはオーナーのみです' }, { status: 403 })
+  }
+
+  await prisma.group.delete({ where: { id } })
+  return NextResponse.json({ ok: true })
+}

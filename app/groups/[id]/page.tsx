@@ -66,10 +66,12 @@ export default function GroupDetailPage() {
   const groupId = params.id as string
 
   const [group, setGroup] = useState<Group | null>(null)
+  const [myRole, setMyRole] = useState<string>('member')
   const [currentUserId, setCurrentUserId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [proposing, setProposing] = useState(false)
   const [votingId, setVotingId] = useState<string | null>(null)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState('')
@@ -78,6 +80,9 @@ export default function GroupDetailPage() {
   const [linkCopied, setLinkCopied] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [proposeError, setProposeError] = useState('')
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [actioning, setActioning] = useState(false)
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/groups/${groupId}`)])
@@ -87,6 +92,7 @@ export default function GroupDetailPage() {
     const groupData = await groupRes.json()
     setCurrentUserId(meData.user.id)
     setGroup(groupData.group)
+    setMyRole(groupData.myRole || 'member')
     setLoading(false)
   }, [groupId, router])
 
@@ -119,6 +125,31 @@ export default function GroupDetailPage() {
     })
     if (res.ok) await fetchData()
     setVotingId(null)
+  }
+
+  async function handleCancelProposal(proposalId: string) {
+    setCancellingId(proposalId)
+    const res = await fetch(`/api/groups/${groupId}/proposals/${proposalId}`, { method: 'PATCH' })
+    if (res.ok) await fetchData()
+    setCancellingId(null)
+  }
+
+  async function handleLeaveGroup() {
+    setActioning(true)
+    const res = await fetch(`/api/groups/${groupId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'leave' }),
+    })
+    if (res.ok) router.push('/dashboard')
+    else setActioning(false)
+  }
+
+  async function handleDeleteGroup() {
+    setActioning(true)
+    const res = await fetch(`/api/groups/${groupId}`, { method: 'DELETE' })
+    if (res.ok) router.push('/dashboard')
+    else setActioning(false)
   }
 
   async function handleInvite(e: React.FormEvent) {
@@ -270,6 +301,23 @@ export default function GroupDetailPage() {
               )}
             </div>
           )}
+
+          {/* Leave / Delete */}
+          <div className="mt-4 pt-4 flex justify-end" style={{ borderTop: '1px solid #F5F0EB' }}>
+            {myRole === 'owner' ? (
+              <button onClick={() => setShowDeleteConfirm(true)}
+                className="text-xs font-black px-3 py-1.5 rounded-xl"
+                style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3' }}>
+                グループを削除
+              </button>
+            ) : (
+              <button onClick={() => setShowLeaveConfirm(true)}
+                className="text-xs font-black px-3 py-1.5 rounded-xl"
+                style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3' }}>
+                グループを退出
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Availability nudge */}
@@ -333,7 +381,9 @@ export default function GroupDetailPage() {
             <div className="mt-3 space-y-4">
               {activeProposals.map((p) => (
                 <ProposalCard key={p.id} proposal={p} currentUserId={currentUserId}
-                  memberCount={group.members.length} onVote={handleVote} loading={votingId === p.id} />
+                  memberCount={group.members.length} myRole={myRole}
+                  onVote={handleVote} onCancel={handleCancelProposal}
+                  loading={votingId === p.id || cancellingId === p.id} />
               ))}
             </div>
           </section>
@@ -346,7 +396,8 @@ export default function GroupDetailPage() {
             <div className="mt-3 space-y-4">
               {pastProposals.map((p) => (
                 <ProposalCard key={p.id} proposal={p} currentUserId={currentUserId}
-                  memberCount={group.members.length} onVote={handleVote} loading={votingId === p.id} />
+                  memberCount={group.members.length} myRole={myRole}
+                  onVote={handleVote} loading={votingId === p.id} />
               ))}
             </div>
           </section>
@@ -366,6 +417,52 @@ export default function GroupDetailPage() {
           </div>
         </section>
       </main>
+
+      {/* Leave confirm modal */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          onClick={() => setShowLeaveConfirm(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-black mb-2" style={{ color: '#2D1B0E' }}>グループを退出しますか？</h3>
+            <p className="text-sm font-bold mb-6" style={{ color: '#9B8B7E' }}>退出するとこのグループの提案やチャットにアクセスできなくなります。</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLeaveConfirm(false)}
+                className="flex-1 py-3 rounded-2xl text-sm font-black"
+                style={{ border: '1.5px solid #EDE8E3', color: '#9B8B7E' }}>
+                キャンセル
+              </button>
+              <button onClick={handleLeaveGroup} disabled={actioning}
+                className="flex-1 py-3 rounded-2xl text-white text-sm font-black disabled:opacity-60"
+                style={{ background: '#F07050' }}>
+                {actioning ? '退出中...' : '退出する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-black mb-2" style={{ color: '#2D1B0E' }}>グループを削除しますか？</h3>
+            <p className="text-sm font-bold mb-6" style={{ color: '#9B8B7E' }}>この操作は取り消せません。メンバー全員のデータが削除されます。</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-3 rounded-2xl text-sm font-black"
+                style={{ border: '1.5px solid #EDE8E3', color: '#9B8B7E' }}>
+                キャンセル
+              </button>
+              <button onClick={handleDeleteGroup} disabled={actioning}
+                className="flex-1 py-3 rounded-2xl text-white text-sm font-black disabled:opacity-60"
+                style={{ background: '#F07050' }}>
+                {actioning ? '削除中...' : '削除する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
