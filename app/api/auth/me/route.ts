@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, priceRange: true, googleCalendarConnected: true, createdAt: true },
+    select: { id: true, name: true, email: true, priceRange: true, avatarUrl: true, googleCalendarConnected: true, createdAt: true },
   })
 
   if (!user) {
@@ -27,13 +27,23 @@ export async function PUT(request: NextRequest) {
   }
 
   const body = await request.json()
-  const updateData: { name?: string; priceRange?: string } = {}
+  const updateData: { name?: string; priceRange?: string; avatarUrl?: string | null } = {}
 
   if (body.name && typeof body.name === 'string' && body.name.trim()) {
     updateData.name = body.name.trim()
   }
   if (body.priceRange && ['budget', 'mid', 'high'].includes(body.priceRange)) {
     updateData.priceRange = body.priceRange
+  }
+  if ('avatarUrl' in body) {
+    const a = body.avatarUrl
+    if (a === null || a === '') {
+      updateData.avatarUrl = null
+    } else if (typeof a === 'string' && a.startsWith('data:image/') && a.length <= 700_000) {
+      updateData.avatarUrl = a
+    } else {
+      return NextResponse.json({ error: '画像の形式またはサイズが無効です' }, { status: 400 })
+    }
   }
 
   if (Object.keys(updateData).length === 0) {
@@ -43,7 +53,7 @@ export async function PUT(request: NextRequest) {
   const user = await prisma.user.update({
     where: { id: userId },
     data: updateData,
-    select: { id: true, name: true, email: true, priceRange: true, googleCalendarConnected: true },
+    select: { id: true, name: true, email: true, priceRange: true, avatarUrl: true, googleCalendarConnected: true },
   })
 
   return NextResponse.json({ user })

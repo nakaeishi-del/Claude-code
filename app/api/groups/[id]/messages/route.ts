@@ -18,7 +18,7 @@ export async function GET(
 
   const messages = await prisma.groupMessage.findMany({
     where: { groupId: id },
-    include: { user: { select: { id: true, name: true } } },
+    include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     orderBy: { createdAt: 'asc' },
     take: 100,
   })
@@ -48,7 +48,7 @@ export async function POST(
 
   const message = await prisma.groupMessage.create({
     data: { groupId: id, userId, content },
-    include: { user: { select: { id: true, name: true } } },
+    include: { user: { select: { id: true, name: true, avatarUrl: true } } },
   })
 
   return NextResponse.json({ message })

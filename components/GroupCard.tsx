@@ -1,9 +1,11 @@
 import Link from 'next/link'
+import Avatar from './Avatar'
 
 interface Member {
   id: string
   name: string
   email: string
+  avatarUrl?: string | null
 }
 
 interface Proposal {
@@ -34,10 +36,6 @@ const priceLabels: Record<string, { label: string; color: string; bg: string }> 
 
 const avatarPalette = ['#F07050', '#7AC8A0', '#F0B050', '#A87FD0']
 
-function getInitials(name: string) {
-  return name.charAt(0)
-}
-
 export default function GroupCard({ group }: GroupCardProps) {
   const members = group.members || []
   const proposal = group.latestProposal
@@ -67,11 +65,9 @@ export default function GroupCard({ group }: GroupCardProps) {
 
         <div className="flex items-center gap-1.5 mb-3">
           {members.slice(0, 4).map((m, i) => (
-            <div key={m.user.id}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black"
-              style={{ background: avatarPalette[i % avatarPalette.length] }}
-              title={m.user.name}>
-              {getInitials(m.user.name)}
+            <div key={m.user.id} title={m.user.name}>
+              <Avatar name={m.user.name} avatarUrl={m.user.avatarUrl} size={28}
+                color={avatarPalette[i % avatarPalette.length]} />
             </div>
           ))}
           {members.length > 4 && (

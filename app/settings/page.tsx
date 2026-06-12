@@ -1,17 +1,45 @@
 'use client'
 
-import { Suspense, useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import AvailabilityGrid from '@/components/AvailabilityGrid'
 import BearMascot from '@/components/BearMascot'
+import Avatar from '@/components/Avatar'
 
 interface User {
   id: string
   name: string
   email: string
   priceRange: string
+  avatarUrl?: string | null
   googleCalendarConnected: boolean
+}
+
+// Resize an image file to a square data URL (JPEG, ~200px) for compact storage.
+function resizeImage(file: File, maxSize = 200): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('読み込みに失敗しました'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('画像を読み込めませんでした'))
+      img.onload = () => {
+        const side = Math.min(img.width, img.height)
+        const sx = (img.width - side) / 2
+        const sy = (img.height - side) / 2
+        const canvas = document.createElement('canvas')
+        canvas.width = maxSize
+        canvas.height = maxSize
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { reject(new Error('canvas エラー')); return }
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, maxSize, maxSize)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 interface AvailabilityEntry {
@@ -62,7 +90,10 @@ function SettingsContent() {
   const [disconnecting, setDisconnecting] = useState(false)
   const [priceRange, setPriceRange] = useState('mid')
   const [editName, setEditName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarError, setAvatarError] = useState('')
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchData = useCallback(async () => {
     const [meRes, availRes] = await Promise.all([fetch('/api/auth/me'), fetch('/api/availability')])
@@ -72,6 +103,7 @@ function SettingsContent() {
     setUser(meData.user)
     setPriceRange(meData.user.priceRange)
     setEditName(meData.user.name)
+    setAvatarUrl(meData.user.avatarUrl ?? null)
     setAvailability(availData.availability || [])
     setLoading(false)
   }, [router])
@@ -83,6 +115,25 @@ function SettingsContent() {
     await fetch('/api/auth/google/disconnect', { method: 'POST' })
     setDisconnecting(false)
     await fetchData()
+  }
+
+  async function handlePickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file
+    if (!file) return
+    setAvatarError('')
+    if (!file.type.startsWith('image/')) { setAvatarError('画像ファイルを選んでください'); return }
+    try {
+      const dataUrl = await resizeImage(file)
+      setAvatarUrl(dataUrl)
+    } catch {
+      setAvatarError('画像の処理に失敗しました')
+    }
+  }
+
+  function handleRemovePhoto() {
+    setAvatarUrl(null)
+    setAvatarError('')
   }
 
   async function handleSave() {
@@ -97,7 +148,7 @@ function SettingsContent() {
       fetch('/api/auth/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName, priceRange }),
+        body: JSON.stringify({ name: editName, priceRange, avatarUrl }),
       }),
     ])
     await fetchData()
@@ -119,7 +170,7 @@ function SettingsContent() {
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
-      <Navbar userName={user?.name} />
+      <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
       <main className="max-w-2xl mx-auto px-4 pt-7 pb-28 sm:pb-10 space-y-5">
         <div className="mb-6">
@@ -129,6 +180,33 @@ function SettingsContent() {
 
         <Card>
           <SLabel>プロフィール</SLabel>
+
+          {/* Avatar */}
+          <div className="mt-4 flex items-center gap-4">
+            <Avatar name={editName || 'U'} avatarUrl={avatarUrl} size={72} />
+            <div className="flex-1">
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePickPhoto} className="hidden" />
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                  className="text-xs font-black px-4 py-2.5 rounded-2xl text-white"
+                  style={{ background: '#F07050' }}>
+                  写真を選ぶ
+                </button>
+                {avatarUrl && (
+                  <button type="button" onClick={handleRemovePhoto}
+                    className="text-xs font-black px-4 py-2.5 rounded-2xl"
+                    style={{ border: '1.5px solid #EDE8E3', color: '#9B8B7E' }}>
+                    削除
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] font-bold mt-2" style={{ color: '#C8B8A8' }}>
+                自分の写真を正方形に切り抜いてアイコンにします
+              </p>
+              {avatarError && <p className="text-xs font-bold mt-1" style={{ color: '#F07050' }}>{avatarError}</p>}
+            </div>
+          </div>
+
           <div className="mt-4 space-y-3">
             <div>
               <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>お名前</label>

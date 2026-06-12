@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS "User" (
   "name" TEXT NOT NULL,
   "passwordHash" TEXT NOT NULL,
   "priceRange" TEXT NOT NULL DEFAULT 'mid',
+  "avatarUrl" TEXT,
   "googleCalendarConnected" BOOLEAN NOT NULL DEFAULT false,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -125,12 +126,28 @@ const FK_SQL = [
   `ALTER TABLE "GroupMessage" ADD CONSTRAINT "GroupMessage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
 ]
 
+// Idempotent column additions for already-existing databases.
+const MIGRATIONS = [
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT`,
+]
+
+async function runMigrations() {
+  for (const sql of MIGRATIONS) {
+    try {
+      await prisma.$executeRawUnsafe(sql)
+    } catch {
+      // ignore — column may already exist
+    }
+  }
+}
+
 let initialized = false
 
 export async function ensureDbReady(): Promise<void> {
   if (initialized) return
   try {
     await prisma.$executeRaw`SELECT 1 FROM "User" LIMIT 0`
+    await runMigrations()
     initialized = true
   } catch {
     // Tables don't exist — create them
@@ -144,6 +161,7 @@ export async function ensureDbReady(): Promise<void> {
         // ignore "already exists"
       }
     }
+    await runMigrations()
     await seedDemoUsers()
     initialized = true
   }

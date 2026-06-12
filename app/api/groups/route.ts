@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       group: {
         include: {
           members: {
-            include: { user: { select: { id: true, name: true, email: true } } },
+            include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } },
           },
           proposals: {
             orderBy: { createdAt: 'desc' },

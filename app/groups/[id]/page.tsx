@@ -7,6 +7,7 @@ import ProposalCard from '@/components/ProposalCard'
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import GroupChat from '@/components/GroupChat'
 import BearMascot from '@/components/BearMascot'
+import Avatar from '@/components/Avatar'
 import Link from 'next/link'
 
 interface Member {
@@ -14,6 +15,7 @@ interface Member {
   name: string
   email: string
   priceRange: string
+  avatarUrl?: string | null
   hasAvailability?: boolean
 }
 
@@ -226,10 +228,8 @@ export default function GroupDetailPage() {
             <div className="flex flex-wrap gap-3">
               {group.members.map((m, i) => (
                 <div key={m.id} className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-black"
-                    style={{ background: avatarPalette[i % avatarPalette.length] }}>
-                    {m.user.name.charAt(0)}
-                  </div>
+                  <Avatar name={m.user.name} avatarUrl={m.user.avatarUrl} size={36}
+                    color={avatarPalette[i % avatarPalette.length]} />
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold" style={{ color: '#2D1B0E' }}>{m.user.name}</span>

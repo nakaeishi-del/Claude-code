@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar'
 import GroupCard from '@/components/GroupCard'
 import BearMascot from '@/components/BearMascot'
 
-interface User { id: string; name: string; email: string; priceRange: string }
+interface User { id: string; name: string; email: string; priceRange: string; avatarUrl?: string | null }
 interface Group {
   id: string; name: string; description?: string | null; priceRange: string
   members: { user: { id: string; name: string; email: string } }[]
@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
-      <Navbar userName={user?.name} />
+      <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
       <main className="max-w-5xl mx-auto px-4 pt-7 pb-24 sm:pb-10">
         {/* Welcome */}

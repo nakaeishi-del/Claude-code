@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import Avatar from './Avatar'
 
 interface Message {
   id: string
   content: string
   createdAt: string
-  user: { id: string; name: string }
+  user: { id: string; name: string; avatarUrl?: string | null }
 }
 
 interface Props {
@@ -119,9 +120,8 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
             return (
               <div key={msg.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                 {!isMe && (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 mt-0.5"
-                    style={{ background: color }}>
-                    {msg.user.name.charAt(0)}
+                  <div className="mt-0.5">
+                    <Avatar name={msg.user.name} avatarUrl={msg.user.avatarUrl} size={28} color={color} />
                   </div>
                 )}
                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[75%]`}>

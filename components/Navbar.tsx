@@ -2,12 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Avatar from './Avatar'
 
 interface NavbarProps {
   userName?: string
+  avatarUrl?: string | null
 }
 
-export default function Navbar({ userName }: NavbarProps) {
+export default function Navbar({ userName, avatarUrl }: NavbarProps) {
   const router = useRouter()
 
   async function handleLogout() {
@@ -46,9 +48,8 @@ export default function Navbar({ userName }: NavbarProps) {
             ログアウト
           </button>
           {userName && (
-            <div className="sm:hidden w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-black"
-              style={{ background: '#F07050' }}>
-              {userName.charAt(0)}
+            <div className="sm:hidden">
+              <Avatar name={userName} avatarUrl={avatarUrl} size={32} />
             </div>
           )}
         </div>

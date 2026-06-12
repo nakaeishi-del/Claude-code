@@ -14,6 +14,7 @@ model User {
   name                    String
   passwordHash            String
   priceRange              String   @default("mid") // budget | mid | high
+  avatarUrl               String?  // data URL or remote image URL
   googleCalendarConnected Boolean  @default(false)
   createdAt               DateTime @default(now())
 
