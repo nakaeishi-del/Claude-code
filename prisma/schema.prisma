@@ -23,6 +23,7 @@ model User {
   votes          MeetingVote[]
   eventLikes     EventLike[]
   googleToken    GoogleToken?
+  groupMessages  GroupMessage[]
 }
 
 model GoogleToken {
@@ -44,6 +45,7 @@ model Group {
 
   members   GroupMember[]
   proposals MeetingProposal[]
+  messages  GroupMessage[]
 }
 
 model GroupMember {
@@ -123,4 +125,15 @@ model EventLike {
   user  User  @relation(fields: [userId], references: [id])
 
   @@unique([eventId, userId])
+}
+
+model GroupMessage {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
 }

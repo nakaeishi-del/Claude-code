@@ -4,19 +4,17 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import ProposalCard from '@/components/ProposalCard'
-<<<<<<< Updated upstream
-import { clsx } from 'clsx'
-=======
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
+import GroupChat from '@/components/GroupChat'
 import BearMascot from '@/components/BearMascot'
 import Link from 'next/link'
->>>>>>> Stashed changes
 
 interface Member {
   id: string
   name: string
   email: string
   priceRange: string
+  hasAvailability?: boolean
 }
 
 interface Vote {
@@ -50,16 +48,7 @@ interface Group {
   proposals: Proposal[]
 }
 
-<<<<<<< Updated upstream
-const avatarColors = [
-  'bg-[#FF6B6B]',
-  'bg-[#4ECDC4]',
-  'bg-yellow-400',
-  'bg-purple-400',
-]
-=======
 const avatarPalette = ['#F07050', '#7AC8A0', '#F0B050', '#A87FD0']
->>>>>>> Stashed changes
 
 const priceLabels: Record<string, string> = {
   budget: 'リーズナブル (〜¥3,000)',
@@ -86,6 +75,8 @@ export default function GroupDetailPage() {
   const [inviteError, setInviteError] = useState('')
   const [inviteSuccess, setInviteSuccess] = useState('')
   const [showInvite, setShowInvite] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/groups/${groupId}`)])
@@ -102,8 +93,11 @@ export default function GroupDetailPage() {
 
   async function handlePropose() {
     setProposing(true)
+    const body = selectedDate ? JSON.stringify({ date: selectedDate }) : undefined
     const res = await fetch(`/api/groups/${groupId}/proposals`, {
       method: 'POST',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body,
     })
     const data = await res.json()
     if (res.ok) {
@@ -146,12 +140,6 @@ export default function GroupDetailPage() {
     setInviting(false)
   }
 
-<<<<<<< Updated upstream
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-        <div className="text-gray-400 text-sm">読み込み中...</div>
-=======
   function copyInviteLink() {
     navigator.clipboard.writeText(`${window.location.origin}/join/${groupId}`).then(() => {
       setLinkCopied(true)
@@ -166,7 +154,6 @@ export default function GroupDetailPage() {
           <BearMascot size={80} mood="sleep" animate />
           <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
         </div>
->>>>>>> Stashed changes
       </div>
     )
   }
@@ -178,11 +165,7 @@ export default function GroupDetailPage() {
   const me = group.members.find((m) => m.user.id === currentUserId)
 
   return (
-<<<<<<< Updated upstream
-    <div className="min-h-screen bg-[#FAFAFA]">
-=======
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
->>>>>>> Stashed changes
       <Navbar />
 
       <main className="max-w-2xl mx-auto px-4 pt-6 pb-24 sm:pb-10">
@@ -215,11 +198,6 @@ export default function GroupDetailPage() {
                     {m.user.name.charAt(0)}
                   </div>
                   <div>
-<<<<<<< Updated upstream
-                    <div className="text-sm font-medium text-gray-700">
-                      {m.user.name}
-                      {m.user.id === currentUserId && <span className="text-xs text-gray-400 ml-1">(あなた)</span>}
-=======
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold" style={{ color: '#2D1B0E' }}>{m.user.name}</span>
                       {m.user.id === currentUserId && (
@@ -229,7 +207,6 @@ export default function GroupDetailPage() {
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full font-black"
                           style={{ background: '#FFF0EC', color: '#F07050' }}>未設定</span>
                       )}
->>>>>>> Stashed changes
                     </div>
                     <div className="text-xs font-bold" style={{ color: '#C8B8A8' }}>
                       {m.role === 'owner' ? 'オーナー' : 'メンバー'}
@@ -244,26 +221,6 @@ export default function GroupDetailPage() {
           {group.members.length < 4 && (
             <div className="mt-4 pt-4" style={{ borderTop: '1px solid #F5F0EB' }}>
               {!showInvite ? (
-<<<<<<< Updated upstream
-                <button
-                  onClick={() => setShowInvite(true)}
-                  className="text-sm text-[#4ECDC4] font-medium hover:text-[#3ba89e] flex items-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  メンバーを招待
-                </button>
-              ) : (
-                <form onSubmit={handleInvite} className="space-y-2">
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="メールアドレスで招待"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4ECDC4] text-sm"
-                    required
-=======
                 <div className="flex items-center gap-3">
                   <button onClick={() => setShowInvite(true)}
                     className="text-sm font-black flex items-center gap-1"
@@ -291,22 +248,13 @@ export default function GroupDetailPage() {
                     style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
                     onFocus={(e) => { e.target.style.borderColor = '#F07050' }}
                     onBlur={(e) => { e.target.style.borderColor = '#EDE8E3' }}
->>>>>>> Stashed changes
                   />
                   {inviteError && <p className="text-xs font-bold" style={{ color: '#F07050' }}>{inviteError}</p>}
                   {inviteSuccess && <p className="text-xs font-bold" style={{ color: '#5BAF7A' }}>{inviteSuccess}</p>}
                   <div className="flex gap-2">
-<<<<<<< Updated upstream
-                    <button
-                      type="submit"
-                      disabled={inviting}
-                      className="flex-1 py-3 bg-[#4ECDC4] text-white rounded-xl text-sm font-semibold hover:bg-[#3ba89e] disabled:opacity-60 transition-colors"
-                    >
-=======
                     <button type="submit" disabled={inviting}
                       className="flex-1 py-3 rounded-2xl text-white text-sm font-black disabled:opacity-60"
                       style={{ background: '#7AC8A0' }}>
->>>>>>> Stashed changes
                       {inviting ? '招待中...' : '招待する'}
                     </button>
                     <button type="button"
@@ -322,20 +270,6 @@ export default function GroupDetailPage() {
           )}
         </div>
 
-<<<<<<< Updated upstream
-        {/* Propose button */}
-        <div className="mb-6">
-          <button
-            onClick={handlePropose}
-            disabled={proposing}
-            className="w-full py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white rounded-xl font-bold text-base hover:opacity-90 transition-opacity disabled:opacity-60 shadow-md"
-          >
-            {proposing ? '最適な日程を計算中...' : '✨ 次の集まりを提案する'}
-          </button>
-          <p className="text-center text-xs text-gray-400 mt-2">
-            メンバーの空き状況を分析して自動でおすすめの日程を提案します
-          </p>
-=======
         {/* Availability nudge */}
         {me && me.user.hasAvailability === false && (
           <div className="mb-5 p-4 rounded-2xl flex items-center gap-3" style={{ background: '#FFF0EC', border: '1.5px solid #F5C4B0' }}>
@@ -382,14 +316,13 @@ export default function GroupDetailPage() {
               上のカレンダーで日付を選ぶか、自動計算もできます
             </p>
           )}
->>>>>>> Stashed changes
         </div>
 
         {/* Active proposals */}
         {activeProposals.length > 0 && (
-          <section className="mb-6 space-y-4">
+          <section className="mb-6">
             <SLabel>現在の提案</SLabel>
-            <div className="space-y-4">
+            <div className="mt-3 space-y-4">
               {activeProposals.map((p) => (
                 <ProposalCard key={p.id} proposal={p} currentUserId={currentUserId}
                   memberCount={group.members.length} onVote={handleVote} loading={votingId === p.id} />
@@ -400,9 +333,9 @@ export default function GroupDetailPage() {
 
         {/* Past proposals */}
         {pastProposals.length > 0 && (
-          <section className="space-y-4">
+          <section className="mb-6">
             <SLabel>過去の提案</SLabel>
-            <div className="space-y-4">
+            <div className="mt-3 space-y-4">
               {pastProposals.map((p) => (
                 <ProposalCard key={p.id} proposal={p} currentUserId={currentUserId}
                   memberCount={group.members.length} onVote={handleVote} loading={votingId === p.id} />
@@ -412,10 +345,18 @@ export default function GroupDetailPage() {
         )}
 
         {group.proposals.length === 0 && (
-          <div className="text-center py-12 font-bold" style={{ color: '#C8B8A8', fontSize: '0.875rem' }}>
+          <div className="text-center py-8 font-bold mb-6" style={{ color: '#C8B8A8', fontSize: '0.875rem' }}>
             まだ提案がありません。上のボタンで自動提案を試してみましょう！
           </div>
         )}
+
+        {/* Group chat */}
+        <section>
+          <SLabel>グループトーク</SLabel>
+          <div className="mt-3 bg-white rounded-2xl p-5" style={{ border: '1.5px solid #EDE8E3' }}>
+            <GroupChat groupId={groupId} currentUserId={currentUserId} />
+          </div>
+        </section>
       </main>
     </div>
   )

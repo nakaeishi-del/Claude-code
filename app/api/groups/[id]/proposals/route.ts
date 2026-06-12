@@ -62,13 +62,21 @@ export async function POST(
       return NextResponse.json({ error: 'グループが見つかりません' }, { status: 404 })
     }
 
-    // Find best dates
-    const bestDates = await findBestMeetingDates(groupId)
-    if (bestDates.length === 0) {
-      return NextResponse.json({ error: '適切な日程が見つかりませんでした' }, { status: 400 })
+    // Use manually selected date or auto-find
+    let body: { date?: string } = {}
+    try { body = await request.json() } catch { /* no body */ }
+
+    let proposedDate: string
+    if (body.date) {
+      proposedDate = body.date
+    } else {
+      const bestDates = await findBestMeetingDates(groupId)
+      if (bestDates.length === 0) {
+        return NextResponse.json({ error: '適切な日程が見つかりませんでした' }, { status: 400 })
+      }
+      proposedDate = bestDates[0]
     }
 
-    const proposedDate = bestDates[0]
     const proposedTime = '19:00'
 
     // Get restaurant suggestion

@@ -26,7 +26,10 @@ export async function GET(
     include: {
       members: {
         include: {
-          user: { select: { id: true, name: true, email: true, priceRange: true } },
+          user: {
+            select: { id: true, name: true, email: true, priceRange: true },
+            include: { availability: { select: { id: true }, take: 1 } },
+          },
         },
         orderBy: { joinedAt: 'asc' },
       },
@@ -48,5 +51,20 @@ export async function GET(
     return NextResponse.json({ error: 'グループが見つかりません' }, { status: 404 })
   }
 
-  return NextResponse.json({ group, myRole: membership.role })
+  // Attach hasAvailability flag to each member
+  const groupWithFlags = {
+    ...group,
+    members: group.members.map((m) => ({
+      ...m,
+      user: {
+        id: m.user.id,
+        name: m.user.name,
+        email: m.user.email,
+        priceRange: m.user.priceRange,
+        hasAvailability: (m.user as typeof m.user & { availability: { id: string }[] }).availability.length > 0,
+      },
+    })),
+  }
+
+  return NextResponse.json({ group: groupWithFlags, myRole: membership.role })
 }
