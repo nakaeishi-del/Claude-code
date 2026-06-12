@@ -1,7 +1,5 @@
 'use client'
 
-import { clsx } from 'clsx'
-
 interface Vote {
   id: string
   userId: string
@@ -28,37 +26,19 @@ interface ProposalCardProps {
   loading?: boolean
 }
 
-const statusColors: Record<string, string> = {
-  pending: 'text-orange-600 bg-orange-50 border-orange-200',
-  confirmed: 'text-green-600 bg-green-50 border-green-200',
-  cancelled: 'text-gray-500 bg-gray-50 border-gray-200',
+const statusStyles: Record<string, { color: string; bg: string; label: string }> = {
+  pending:   { color: '#F07050', bg: '#FFF0EC', label: '投票中' },
+  confirmed: { color: '#5BAF7A', bg: '#F0FAF2', label: '確定' },
+  cancelled: { color: '#C8B8A8', bg: '#F5F0EB', label: 'キャンセル' },
 }
 
-const statusLabels: Record<string, string> = {
-  pending: '投票中',
-  confirmed: '確定',
-  cancelled: 'キャンセル',
+const voteConfig = {
+  accept:  { label: '参加する', icon: '○', active: { bg: '#5BAF7A', color: '#fff' } },
+  maybe:   { label: '未定',     icon: '△', active: { bg: '#F0C050', color: '#fff' } },
+  decline: { label: '欠席',     icon: '✕', active: { bg: '#F07050', color: '#fff' } },
 }
 
-const voteLabels: Record<string, string> = {
-  accept: '参加する',
-  decline: '欠席',
-  maybe: '未定',
-}
-
-const voteIcons: Record<string, string> = {
-  accept: '○',
-  decline: '✕',
-  maybe: '△',
-}
-
-export default function ProposalCard({
-  proposal,
-  currentUserId,
-  memberCount,
-  onVote,
-  loading,
-}: ProposalCardProps) {
+export default function ProposalCard({ proposal, currentUserId, memberCount, onVote, loading }: ProposalCardProps) {
   const myVote = proposal.votes.find((v) => v.userId === currentUserId)
   const acceptCount = proposal.votes.filter((v) => v.vote === 'accept').length
   const declineCount = proposal.votes.filter((v) => v.vote === 'decline').length
@@ -66,13 +46,16 @@ export default function ProposalCard({
 
   const dateObj = new Date(proposal.proposedDate + 'T00:00:00')
   const dateLabel = dateObj.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
+    year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
   })
 
+  const st = statusStyles[proposal.status] || statusStyles.cancelled
+  const borderColor = proposal.status === 'confirmed' ? '#D4EDD8'
+    : proposal.status === 'cancelled' ? '#EDE8E3'
+    : '#F5C4B0'
+
   return (
+<<<<<<< Updated upstream
     <div className={clsx(
       'bg-white rounded-xl border-2 p-5',
       proposal.status === 'confirmed'
@@ -82,105 +65,96 @@ export default function ProposalCard({
         : 'border-[#FF6B6B]/30'
     )}>
       {/* Header */}
+=======
+    <div className="bg-white rounded-2xl p-5" style={{ border: `1.5px solid ${borderColor}` }}>
+>>>>>>> Stashed changes
       <div className="flex items-start justify-between mb-4">
         <div>
-          <span className={clsx(
-            'inline-flex text-xs px-2.5 py-1 rounded-full font-semibold border mb-2',
-            statusColors[proposal.status]
-          )}>
-            {statusLabels[proposal.status]}
+          <span className="inline-flex text-[11px] px-2.5 py-1 rounded-full font-black mb-2"
+            style={{ color: st.color, background: st.bg }}>
+            {st.label}
           </span>
-          <div className="text-base font-bold text-gray-800">{dateLabel}</div>
-          <div className="text-sm text-gray-500">{proposal.proposedTime}〜</div>
+          <div className="text-base font-black" style={{ color: '#2D1B0E' }}>{dateLabel}</div>
+          <div className="text-sm mt-0.5" style={{ color: '#9B8B7E' }}>{proposal.proposedTime}〜</div>
         </div>
-        <div className="text-right">
-          <div className="text-xs text-gray-400">{proposal.createdBy.name}が提案</div>
-        </div>
+        <div className="text-xs font-bold" style={{ color: '#C8B8A8' }}>{proposal.createdBy.name}が提案</div>
       </div>
 
+<<<<<<< Updated upstream
       {/* Restaurant info */}
       <div className="bg-[#FAFAFA] rounded-xl p-4 mb-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 bg-[#FF6B6B]/10 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+=======
+      <div className="rounded-2xl p-4 mb-4" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3' }}>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
+            style={{ background: '#FFF0EC' }}>
+>>>>>>> Stashed changes
             🍽️
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-gray-800 text-sm truncate">{proposal.restaurantName}</div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            <div className="font-black text-sm truncate" style={{ color: '#2D1B0E' }}>{proposal.restaurantName}</div>
+            <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>
               {proposal.restaurantArea} · {proposal.restaurantGenre}
             </div>
+<<<<<<< Updated upstream
             <div className="text-xs text-[#FF6B6B] font-medium mt-1">{proposal.estimatedCost}</div>
+=======
+            <div className="text-xs mt-1 font-black" style={{ color: '#F07050' }}>{proposal.estimatedCost}</div>
+>>>>>>> Stashed changes
           </div>
         </div>
       </div>
 
-      {/* Vote counts */}
-      <div className="flex gap-3 mb-4">
-        <div className="flex-1 text-center py-2 bg-green-50 rounded-lg">
-          <div className="text-lg font-bold text-green-600">{acceptCount}</div>
-          <div className="text-xs text-green-600">参加</div>
-        </div>
-        <div className="flex-1 text-center py-2 bg-yellow-50 rounded-lg">
-          <div className="text-lg font-bold text-yellow-600">{maybeCount}</div>
-          <div className="text-xs text-yellow-600">未定</div>
-        </div>
-        <div className="flex-1 text-center py-2 bg-red-50 rounded-lg">
-          <div className="text-lg font-bold text-red-500">{declineCount}</div>
-          <div className="text-xs text-red-500">欠席</div>
-        </div>
-        <div className="flex-1 text-center py-2 bg-gray-50 rounded-lg">
-          <div className="text-lg font-bold text-gray-400">{memberCount - proposal.votes.length}</div>
-          <div className="text-xs text-gray-400">未投票</div>
-        </div>
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        {[
+          { count: acceptCount,  label: '参加', color: '#5BAF7A', bg: '#F0FAF2' },
+          { count: maybeCount,   label: '未定', color: '#C8A020', bg: '#FFFBEB' },
+          { count: declineCount, label: '欠席', color: '#F07050', bg: '#FFF0EC' },
+          { count: memberCount - proposal.votes.length, label: '未投票', color: '#C8B8A8', bg: '#F5F0EB' },
+        ].map(({ count, label, color, bg }) => (
+          <div key={label} className="text-center py-2 rounded-2xl" style={{ background: bg }}>
+            <div className="text-lg font-black" style={{ color }}>{count}</div>
+            <div className="text-[10px] font-bold" style={{ color }}>{label}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Vote buttons */}
       {proposal.status === 'pending' && (
         <div className="flex gap-2">
-          {(['accept', 'maybe', 'decline'] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => onVote(proposal.id, v)}
-              disabled={loading}
-              className={clsx(
-                'flex-1 py-3.5 rounded-xl text-sm font-semibold transition-all border-2 active:scale-95',
-                myVote?.vote === v
-                  ? v === 'accept'
-                    ? 'bg-green-500 text-white border-green-500'
-                    : v === 'decline'
-                    ? 'bg-red-400 text-white border-red-400'
-                    : 'bg-yellow-400 text-white border-yellow-400'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50',
-                loading && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              <span className="mr-1">{voteIcons[v]}</span>
-              {voteLabels[v]}
-            </button>
-          ))}
+          {(['accept', 'maybe', 'decline'] as const).map((v) => {
+            const cfg = voteConfig[v]
+            const isActive = myVote?.vote === v
+            return (
+              <button
+                key={v}
+                onClick={() => onVote(proposal.id, v)}
+                disabled={loading}
+                className="flex-1 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-95"
+                style={isActive
+                  ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}` }
+                  : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3', opacity: loading ? 0.5 : 1 }
+                }
+              >
+                <span className="mr-1">{cfg.icon}</span>{cfg.label}
+              </button>
+            )
+          })}
         </div>
       )}
 
-      {/* Voter list */}
       {proposal.votes.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex flex-wrap gap-1.5">
-            {proposal.votes.map((vote) => (
-              <span
-                key={vote.id}
-                className={clsx(
-                  'text-xs px-2 py-0.5 rounded-full',
-                  vote.vote === 'accept'
-                    ? 'bg-green-50 text-green-600'
-                    : vote.vote === 'decline'
-                    ? 'bg-red-50 text-red-500'
-                    : 'bg-yellow-50 text-yellow-600'
-                )}
-              >
-                {voteIcons[vote.vote]} {vote.user.name}
+        <div className="mt-3 pt-3 flex flex-wrap gap-1.5" style={{ borderTop: '1px solid #F5F0EB' }}>
+          {proposal.votes.map((vote) => {
+            const cfg = voteConfig[vote.vote as keyof typeof voteConfig]
+            return (
+              <span key={vote.id} className="text-xs px-2 py-0.5 rounded-full font-bold"
+                style={{ background: cfg?.active.bg + '22', color: cfg?.active.bg }}>
+                {cfg?.icon} {vote.user.name}
               </span>
-            ))}
-          </div>
+            )
+          })}
         </div>
       )}
     </div>

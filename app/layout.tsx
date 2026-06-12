@@ -1,18 +1,22 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { M_PLUS_Rounded_1c } from 'next/font/google'
 import './globals.css'
 import ClientShell from '@/components/ClientShell'
 
-const inter = Inter({ subsets: ['latin'] })
+const mplus = M_PLUS_Rounded_1c({
+  subsets: ['latin'],
+  weight: ['400', '700', '800'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: 'TomoMeet - 友達との時間を大切に',
-  description: '大切な友達との時間を、自動で作ろう。グループの空き時間を自動でマッチングする友人グループ向けスケジューラー',
+  title: 'lifematch - 友達との予定、ぜんぶおまかせ！',
+  description: '友達との予定、ぜんぶおまかせ！グループの空き時間を自動でマッチング。',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'TomoMeet',
+    title: 'lifematch',
   },
 }
 
@@ -21,7 +25,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#FF6B6B',
+  themeColor: '#F07050',
 }
 
 export default function RootLayout({
@@ -31,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={`${inter.className} bg-[#FAFAFA] text-gray-800`}>
+      <body className={mplus.className} style={{ background: '#FFFDF9', color: '#2D1B0E' }}>
         <ClientShell>{children}</ClientShell>
       </body>
     </html>

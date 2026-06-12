@@ -4,31 +4,14 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import GroupCard from '@/components/GroupCard'
-import { clsx } from 'clsx'
+import BearMascot from '@/components/BearMascot'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  priceRange: string
-}
-
+interface User { id: string; name: string; email: string; priceRange: string }
 interface Group {
-  id: string
-  name: string
-  description?: string | null
-  priceRange: string
+  id: string; name: string; description?: string | null; priceRange: string
   members: { user: { id: string; name: string; email: string } }[]
-  memberCount?: number
-  latestProposal?: {
-    id: string
-    status: string
-    proposedDate: string
-    restaurantName: string
-    votes: { vote: string }[]
-  } | null
+  latestProposal?: { id: string; status: string; proposedDate: string; restaurantName: string; votes: { vote: string }[] } | null
 }
-
 const priceRangeOptions = [
   { value: 'budget', label: 'リーズナブル', sub: '〜¥3,000' },
   { value: 'mid', label: 'スタンダード', sub: '¥3,000〜¥8,000' },
@@ -43,113 +26,69 @@ export default function DashboardPage() {
   const [showModal, setShowModal] = useState(false)
   const [creating, setCreating] = useState(false)
   const [formError, setFormError] = useState('')
-  const [form, setForm] = useState({
-    name: '',
-    description: '',
-    priceRange: 'mid',
-  })
+  const [form, setForm] = useState({ name: '', description: '', priceRange: 'mid' })
 
   const fetchData = useCallback(async () => {
-    const [meRes, groupsRes] = await Promise.all([
-      fetch('/api/auth/me'),
-      fetch('/api/groups'),
-    ])
-
-    if (!meRes.ok) {
-      router.push('/')
-      return
-    }
-
-    const meData = await meRes.json()
-    const groupsData = await groupsRes.json()
-
-    setUser(meData.user)
-    setGroups(groupsData.groups || [])
+    const [meRes, groupsRes] = await Promise.all([fetch('/api/auth/me'), fetch('/api/groups')])
+    if (!meRes.ok) { router.push('/'); return }
+    setUser((await meRes.json()).user)
+    setGroups((await groupsRes.json()).groups || [])
     setLoading(false)
   }, [router])
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  useEffect(() => { fetchData() }, [fetchData])
 
   async function handleCreateGroup(e: React.FormEvent) {
-    e.preventDefault()
-    setCreating(true)
-    setFormError('')
-
-    const res = await fetch('/api/groups', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-
+    e.preventDefault(); setCreating(true); setFormError('')
+    const res = await fetch('/api/groups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
     const data = await res.json()
-    if (!res.ok) {
-      setFormError(data.error || 'エラーが発生しました')
-      setCreating(false)
-      return
-    }
-
-    setShowModal(false)
-    setForm({ name: '', description: '', priceRange: 'mid' })
-    await fetchData()
-    setCreating(false)
+    if (!res.ok) { setFormError(data.error || 'エラー'); setCreating(false); return }
+    setShowModal(false); setForm({ name: '', description: '', priceRange: 'mid' }); await fetchData(); setCreating(false)
   }
 
   const confirmedProposals = groups
-    .flatMap((g) =>
-      g.latestProposal?.status === 'confirmed'
-        ? [{ ...g.latestProposal, groupName: g.name, groupId: g.id }]
-        : []
-    )
+    .flatMap((g) => g.latestProposal?.status === 'confirmed' ? [{ ...g.latestProposal, groupName: g.name, groupId: g.id }] : [])
     .sort((a, b) => a.proposedDate.localeCompare(b.proposedDate))
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-        <div className="text-gray-400 text-sm">読み込み中...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
+        <div className="flex flex-col items-center gap-3">
+          <BearMascot size={80} mood="sleep" animate />
+          <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar userName={user?.name} />
 
-      <main className="max-w-5xl mx-auto px-4 py-6 pb-24 sm:pb-8">
+      <main className="max-w-5xl mx-auto px-4 pt-7 pb-24 sm:pb-10">
         {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">
-            こんにちは、{user?.name}さん 👋
+          <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>
+            おかえり、{user?.name}さん 👋
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            今日も友達との時間を作りましょう
-          </p>
+          <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>今日も友達との時間を作ろう</p>
         </div>
 
-        {/* Upcoming confirmed */}
+        {/* Confirmed upcoming */}
         {confirmedProposals.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
-              <span className="w-1 h-5 bg-[#4ECDC4] rounded-full inline-block"></span>
-              今後の予定
-            </h2>
-            <div className="grid gap-3">
+            <SLabel>今後の予定</SLabel>
+            <div className="mt-3 grid gap-3">
               {confirmedProposals.map((p) => (
-                <div
-                  key={p.id}
-                  className="bg-white rounded-xl p-4 border border-green-100 shadow-sm flex items-center gap-4"
-                >
-                  <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-                    🍽️
-                  </div>
+                <div key={p.id} className="bg-white rounded-2xl p-4 flex items-center gap-4" style={{ border: '1.5px solid #D4EDD8' }}>
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#F0FAF2' }}>🍽️</div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-800 text-sm">{p.restaurantName}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">{p.groupName}</div>
+                    <p className="font-bold text-sm" style={{ color: '#2D1B0E' }}>{p.restaurantName}</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#9B8B7E' }}>{p.groupName}</p>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-sm font-semibold text-green-600">{p.proposedDate}</div>
-                    <div className="text-xs text-green-500">確定済み</div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold" style={{ color: '#5BAF7A' }}>{p.proposedDate}</p>
+                    <p className="text-xs" style={{ color: '#7AC8A0' }}>確定済み</p>
                   </div>
                 </div>
               ))}
@@ -160,124 +99,85 @@ export default function DashboardPage() {
         {/* Groups */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-700 flex items-center gap-2">
-              <span className="w-1 h-5 bg-[#FF6B6B] rounded-full inline-block"></span>
-              あなたのグループ
-            </h2>
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 bg-[#FF6B6B] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#e55a5a] transition-colors shadow-sm"
-            >
+            <SLabel>グループ</SLabel>
+            <button onClick={() => setShowModal(true)}
+              className="flex items-center gap-1.5 text-white px-4 py-2.5 rounded-2xl text-sm font-bold transition-transform active:scale-95"
+              style={{ background: '#F07050', boxShadow: '0 3px 12px rgba(240,112,80,0.25)' }}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
-              グループを作成
+              グループを作る
             </button>
           </div>
 
           {groups.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-200">
-              <div className="text-4xl mb-3">👥</div>
-              <div className="text-gray-500 text-sm">グループがありません</div>
-              <div className="text-gray-400 text-xs mt-1 mb-4">友達とグループを作って自動スケジューリングを始めましょう</div>
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-[#FF6B6B] text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-[#e55a5a] transition-colors"
-              >
-                最初のグループを作成
+            <div className="flex flex-col items-center py-14 rounded-3xl" style={{ background: '#FFFFFF', border: '1.5px dashed #EDE8E3' }}>
+              <BearMascot size={90} mood="wink" />
+              <p className="mt-3 font-bold" style={{ color: '#2D1B0E' }}>グループを作って始めよう</p>
+              <p className="mt-1 text-xs mb-5" style={{ color: '#9B8B7E' }}>友達を招待して空き時間を自動でマッチング</p>
+              <button onClick={() => setShowModal(true)}
+                className="text-white px-6 py-3 rounded-2xl text-sm font-bold"
+                style={{ background: '#F07050', boxShadow: '0 3px 12px rgba(240,112,80,0.25)' }}>
+                最初のグループを作る
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {groups.map((group) => (
-                <GroupCard key={group.id} group={group} />
-              ))}
+              {groups.map((group) => <GroupCard key={group.id} group={group} />)}
             </div>
           )}
         </section>
       </main>
 
-      {/* Create Group Modal — bottom sheet on mobile, centered on desktop */}
+      {/* Modal */}
       {showModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drag handle — mobile only */}
+        <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center sm:p-4 z-50"
+          onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md" style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}
+            onClick={(e) => e.stopPropagation()}>
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+              <div className="w-10 h-1 rounded-full" style={{ background: '#EDE8E3' }} />
             </div>
             <div className="p-6 pt-4">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-800">グループを作成</h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600 p-1"
-                >
+                <h3 className="text-lg font-black" style={{ color: '#2D1B0E' }}>グループを作成</h3>
+                <button onClick={() => setShowModal(false)} className="p-1" style={{ color: '#C8B8A8' }}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-
-              {formError && (
-                <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{formError}</div>
-              )}
-
+              {formError && <div className="mb-4 px-4 py-3 rounded-2xl text-sm" style={{ background: '#FFF0EC', color: '#C85030' }}>{formError}</div>}
               <form onSubmit={handleCreateGroup} className="space-y-4">
+                <ModalField label="グループ名" type="text" placeholder="渋谷グルメ部" required
+                  value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">グループ名 *</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] text-sm"
-                    placeholder="渋谷グルメ部"
-                  />
+                  <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>説明（任意）</label>
+                  <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl text-sm resize-none outline-none transition-all"
+                    style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
+                    onFocus={(e) => { e.target.style.borderColor = '#F07050'; e.target.style.background = '#FFF' }}
+                    onBlur={(e) => { e.target.style.borderColor = '#EDE8E3'; e.target.style.background = '#FAFAF8' }}
+                    rows={2} placeholder="グループの説明..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">説明（任意）</label>
-                  <textarea
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] text-sm resize-none"
-                    rows={2}
-                    placeholder="グループの説明を入力..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">価格帯</label>
+                  <label className="block text-xs font-bold mb-2" style={{ color: '#9B8B7E' }}>価格帯</label>
                   <div className="grid grid-cols-3 gap-2">
                     {priceRangeOptions.map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setForm({ ...form, priceRange: opt.value })}
-                        className={clsx(
-                          'p-3 rounded-xl border-2 text-center transition-all',
-                          form.priceRange === opt.value
-                            ? 'border-[#FF6B6B] bg-[#FF6B6B]/5'
-                            : 'border-gray-200 hover:border-gray-300'
-                        )}
-                      >
-                        <div className={clsx('text-xs font-semibold', form.priceRange === opt.value ? 'text-[#FF6B6B]' : 'text-gray-700')}>
-                          {opt.label}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-0.5">{opt.sub}</div>
+                      <button key={opt.value} type="button" onClick={() => setForm({ ...form, priceRange: opt.value })}
+                        className="p-3 rounded-2xl text-center transition-all"
+                        style={form.priceRange === opt.value
+                          ? { border: '2px solid #F07050', background: '#FFF5F2' }
+                          : { border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}>
+                        <p className="text-xs font-bold" style={{ color: form.priceRange === opt.value ? '#F07050' : '#6B5B4E' }}>{opt.label}</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#B8A898' }}>{opt.sub}</p>
                       </button>
                     ))}
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="w-full py-3 bg-[#FF6B6B] text-white rounded-xl font-semibold hover:bg-[#e55a5a] transition-colors disabled:opacity-60 mt-2"
-                >
+                <button type="submit" disabled={creating}
+                  className="w-full py-4 rounded-2xl text-white font-bold text-sm mt-1 disabled:opacity-50"
+                  style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
                   {creating ? '作成中...' : 'グループを作成'}
                 </button>
               </form>
@@ -285,6 +185,27 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function SLabel({ children }: { children: React.ReactNode }) {
+  return <h2 className="text-sm font-black" style={{ color: '#9B8B7E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{children}</h2>
+}
+
+function ModalField({ label, type, placeholder, value, onChange, required }: {
+  label: string; type: string; placeholder: string; value: string; onChange: (v: string) => void; required?: boolean
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>{label}</label>
+      <input type={type} required={required} value={value} placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-3.5 rounded-2xl text-sm outline-none transition-all"
+        style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
+        onFocus={(e) => { e.target.style.borderColor = '#F07050'; e.target.style.background = '#FFF' }}
+        onBlur={(e) => { e.target.style.borderColor = '#EDE8E3'; e.target.style.background = '#FAFAF8' }}
+      />
     </div>
   )
 }
