@@ -27,8 +27,13 @@ export async function GET(
       members: {
         include: {
           user: {
-            select: { id: true, name: true, email: true, priceRange: true },
-            include: { availability: { select: { id: true }, take: 1 } },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              priceRange: true,
+              availability: { select: { id: true }, take: 1 },
+            },
           },
         },
         orderBy: { joinedAt: 'asc' },
@@ -61,7 +66,7 @@ export async function GET(
         name: m.user.name,
         email: m.user.email,
         priceRange: m.user.priceRange,
-        hasAvailability: (m.user as typeof m.user & { availability: { id: string }[] }).availability.length > 0,
+        hasAvailability: (m.user.availability as { id: string }[]).length > 0,
       },
     })),
   }
