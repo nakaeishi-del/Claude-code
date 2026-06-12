@@ -58,6 +58,12 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
 
   return (
     <div className="bg-white rounded-2xl p-5" style={{ border: `1.5px solid ${borderColor}` }}>
+      {proposal.status === 'confirmed' && (
+        <div className="mb-4 px-4 py-3 rounded-2xl text-sm font-black text-center"
+          style={{ background: '#F0FAF2', border: '1px solid #BBF7D0', color: '#3B8A5A' }}>
+          🎉 全員参加確定！楽しんできてね
+        </div>
+      )}
       <div className="flex items-start justify-between mb-4">
         <div>
           <span className="inline-flex text-[11px] px-2.5 py-1 rounded-full font-black mb-2"

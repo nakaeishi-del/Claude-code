@@ -96,12 +96,17 @@ export default function EventsPage() {
   async function inviteGroup(groupId: string) {
     if (!inviteEvent) return
     setInviting(true)
-    await fetch(`/api/events/${inviteEvent.id}/invite`, {
+    const res = await fetch(`/api/events/${inviteEvent.id}/invite`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ groupId }),
     })
     setInviting(false)
+    if (!res.ok) {
+      const data = await res.json()
+      alert(data.error || '提案の作成に失敗しました')
+      return
+    }
     setInviteSent(true)
     setTimeout(() => { setInviteEvent(null); router.push(`/groups/${groupId}`) }, 1000)
   }

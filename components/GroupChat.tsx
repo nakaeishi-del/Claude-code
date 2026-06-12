@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 interface Message {
   id: string
@@ -39,16 +39,51 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    fetch(`/api/groups/${groupId}/messages`)
-      .then((r) => r.json())
-      .then((d) => { setMessages(d.messages || []); setLoading(false) })
-      .catch(() => setLoading(false))
+  const lastIdRef = useRef<string | null>(null)
+  const isAtBottomRef = useRef(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const fetchMessages = useCallback(async (initial = false) => {
+    try {
+      const res = await fetch(`/api/groups/${groupId}/messages`)
+      if (!res.ok) return
+      const d = await res.json()
+      const incoming: Message[] = d.messages || []
+      if (initial) {
+        setMessages(incoming)
+        setLoading(false)
+        lastIdRef.current = incoming[incoming.length - 1]?.id ?? null
+      } else {
+        setMessages((prev) => {
+          const lastKnown = lastIdRef.current
+          const newOnes = lastKnown
+            ? incoming.filter((m) => m.id > lastKnown)
+            : incoming
+          if (newOnes.length === 0) return prev
+          lastIdRef.current = incoming[incoming.length - 1]?.id ?? lastKnown
+          return [...prev, ...newOnes]
+        })
+      }
+    } catch { /* ignore */ }
   }, [groupId])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    fetchMessages(true)
+    const interval = setInterval(() => fetchMessages(false), 5000)
+    return () => clearInterval(interval)
+  }, [fetchMessages])
+
+  useEffect(() => {
+    if (isAtBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
+
+  function handleScroll() {
+    const el = scrollRef.current
+    if (!el) return
+    isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60
+  }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -69,7 +104,7 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
   return (
     <div className="flex flex-col" style={{ minHeight: 0 }}>
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-3 max-h-72 pr-1">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 max-h-72 pr-1">
         {loading ? (
           <div className="text-center py-6 text-xs font-bold" style={{ color: '#C8B8A8' }}>よみこみ中...</div>
         ) : messages.length === 0 ? (
