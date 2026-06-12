@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import BearMascot from '@/components/BearMascot'
 
-export default function Home() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/dashboard'
   const [tab, setTab] = useState<'login' | 'register'>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -23,7 +25,7 @@ export default function Home() {
       })
       const data = await res.json()
       if (!res.ok) setError(data.error || 'ログインに失敗しました')
-      else router.push('/dashboard')
+      else router.push(redirect)
     } catch { setError('通信エラーが発生しました') }
     finally { setLoading(false) }
   }
@@ -40,7 +42,7 @@ export default function Home() {
       })
       const data = await res.json()
       if (!res.ok) setError(data.error || '登録に失敗しました')
-      else router.push('/dashboard')
+      else router.push(redirect)
     } catch { setError('通信エラーが発生しました') }
     finally { setLoading(false) }
   }
@@ -106,6 +108,18 @@ export default function Home() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
+        <BearMascot size={80} mood="sleep" animate />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
 

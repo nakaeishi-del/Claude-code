@@ -61,6 +61,7 @@ function SettingsContent() {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const [priceRange, setPriceRange] = useState('mid')
+  const [editName, setEditName] = useState('')
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
 
   const fetchData = useCallback(async () => {
@@ -70,6 +71,7 @@ function SettingsContent() {
     const availData = await availRes.json()
     setUser(meData.user)
     setPriceRange(meData.user.priceRange)
+    setEditName(meData.user.name)
     setAvailability(availData.availability || [])
     setLoading(false)
   }, [router])
@@ -86,11 +88,19 @@ function SettingsContent() {
   async function handleSave() {
     setSaving(true)
     setSaveSuccess(false)
-    await fetch('/api/availability', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ availability }),
-    })
+    await Promise.all([
+      fetch('/api/availability', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ availability }),
+      }),
+      fetch('/api/auth/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, priceRange }),
+      }),
+    ])
+    await fetchData()
     setSaving(false)
     setSaveSuccess(true)
     setTimeout(() => setSaveSuccess(false), 3000)
@@ -122,13 +132,19 @@ function SettingsContent() {
           <div className="mt-4 space-y-3">
             <div>
               <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>お名前</label>
-              <div className="px-4 py-3 rounded-2xl text-sm font-bold" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}>
-                {user?.name}
-              </div>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl text-sm font-bold outline-none transition-all"
+                style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
+                onFocus={(e) => { e.target.style.borderColor = '#F07050'; e.target.style.background = '#FFF' }}
+                onBlur={(e) => { e.target.style.borderColor = '#EDE8E3'; e.target.style.background = '#FAFAF8' }}
+              />
             </div>
             <div>
               <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>メールアドレス</label>
-              <div className="px-4 py-3 rounded-2xl text-sm font-bold" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}>
+              <div className="px-4 py-3 rounded-2xl text-sm font-bold" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#C8B8A8' }}>
                 {user?.email}
               </div>
             </div>

@@ -19,12 +19,13 @@ const EVENT_TEMPLATES = [
   { title: '銀座グルメサミット', genre: 'food', venue: '銀座シックス', area: '銀座', description: '銀座の名店が集う究極のグルメイベント' },
 ]
 
-async function autoSeedEvents() {
-  const today = new Date()
-  const data = EVENT_TEMPLATES.map((t, i) => {
-    const date = new Date(today)
-    date.setDate(today.getDate() + i * 2 + 1)
-    return { ...t, date: date.toISOString().split('T')[0] }
+async function autoSeedEvents(month: string) {
+  const [y, m] = month.split('-').map(Number)
+  const daysInMonth = new Date(y, m, 0).getDate()
+  const shuffled = [...EVENT_TEMPLATES].sort(() => Math.random() - 0.5)
+  const data = shuffled.map((t, i) => {
+    const day = Math.min(1 + i * 2, daysInMonth)
+    return { ...t, date: `${month}-${String(day).padStart(2, '0')}` }
   })
   await prisma.event.createMany({ data })
 }
@@ -55,9 +56,12 @@ export async function GET(request: NextRequest) {
   })
 
   if (events.length === 0 && !genre) {
-    const total = await prisma.event.count()
-    if (total === 0) {
-      await autoSeedEvents()
+    const targetMonth = month || new Date().toISOString().slice(0, 7)
+    const monthCount = await prisma.event.count({
+      where: { date: { gte: `${targetMonth}-01`, lte: `${targetMonth}-31` } },
+    })
+    if (monthCount === 0) {
+      await autoSeedEvents(targetMonth)
       events = await prisma.event.findMany({
         where,
         include: { likes: true },

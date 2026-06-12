@@ -77,6 +77,7 @@ export default function GroupDetailPage() {
   const [showInvite, setShowInvite] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [proposeError, setProposeError] = useState('')
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/groups/${groupId}`)])
@@ -93,6 +94,7 @@ export default function GroupDetailPage() {
 
   async function handlePropose() {
     setProposing(true)
+    setProposeError('')
     const body = selectedDate ? JSON.stringify({ date: selectedDate }) : undefined
     const res = await fetch(`/api/groups/${groupId}/proposals`, {
       method: 'POST',
@@ -103,7 +105,7 @@ export default function GroupDetailPage() {
     if (res.ok) {
       await fetchData()
     } else {
-      alert(data.error || 'エラーが発生しました')
+      setProposeError(data.error || 'エラーが発生しました')
     }
     setProposing(false)
   }
@@ -305,6 +307,12 @@ export default function GroupDetailPage() {
                 ? `📅 ${selectedDate.slice(5).replace('-', '/')} で提案する`
                 : '✨ 自動で最適な日程を提案する'}
           </button>
+          {proposeError && (
+            <div className="mt-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-center"
+              style={{ background: '#FFF0EC', color: '#C85030', border: '1px solid #F5C4B0' }}>
+              {proposeError}
+            </div>
+          )}
           {selectedDate ? (
             <button onClick={() => setSelectedDate(null)}
               className="w-full text-center text-xs font-bold mt-2"
