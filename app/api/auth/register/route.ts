@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
     return response
-  } catch {
-    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 })
+  } catch (e) {
+    console.error('[register] error:', e)
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: 'サーバーエラーが発生しました', detail: msg }, { status: 500 })
   }
 }
