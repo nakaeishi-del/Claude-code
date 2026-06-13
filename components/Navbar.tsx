@@ -28,6 +28,9 @@ export default function Navbar({ userName, avatarUrl }: NavbarProps) {
             <Link href="/dashboard" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
               ホーム
             </Link>
+            <Link href="/events" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
+              イベント
+            </Link>
             <Link href="/settings" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
               設定
             </Link>
