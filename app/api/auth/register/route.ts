@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/db'
 import { signToken } from '@/lib/auth'
+import { ensureDbReady } from '@/lib/init-db'
 
 export async function POST(request: NextRequest) {
   try {
+    await ensureDbReady()
     const { name, email, password } = await request.json()
 
     if (!name || !email || !password) {
