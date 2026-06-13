@@ -24,7 +24,7 @@ function LoginContent() {
         body: JSON.stringify(loginData),
       })
       const data = await res.json()
-      if (!res.ok) setError(data.error || 'ログインに失敗しました')
+      if (!res.ok) setError(data.detail ? `${data.error}（${data.detail}）` : (data.error || 'ログインに失敗しました'))
       else router.push(redirect)
     } catch { setError('通信エラーが発生しました') }
     finally { setLoading(false) }
@@ -41,7 +41,7 @@ function LoginContent() {
         body: JSON.stringify({ name: registerData.name, email: registerData.email, password: registerData.password }),
       })
       const data = await res.json()
-      if (!res.ok) setError(data.error || '登録に失敗しました')
+      if (!res.ok) setError(data.detail ? `${data.error}（${data.detail}）` : (data.error || '登録に失敗しました'))
       else router.push(redirect)
     } catch { setError('通信エラーが発生しました') }
     finally { setLoading(false) }
