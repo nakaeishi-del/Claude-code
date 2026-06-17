@@ -171,7 +171,7 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-2 mb-3">
         {[
           { count: acceptCount,  label: '参加', color: '#5BAF7A', bg: '#F0FAF2' },
           { count: maybeCount,   label: '未定', color: '#C8A020', bg: '#FFFBEB' },
@@ -184,6 +184,19 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
           </div>
         ))}
       </div>
+      {memberCount > 0 && (
+        <div className="flex h-2 rounded-full overflow-hidden mb-4" style={{ background: '#F5F0EB' }}>
+          {acceptCount > 0 && (
+            <div style={{ width: `${(acceptCount / memberCount) * 100}%`, background: '#5BAF7A', transition: 'width 0.5s ease' }} />
+          )}
+          {maybeCount > 0 && (
+            <div style={{ width: `${(maybeCount / memberCount) * 100}%`, background: '#F0C050', transition: 'width 0.5s ease' }} />
+          )}
+          {declineCount > 0 && (
+            <div style={{ width: `${(declineCount / memberCount) * 100}%`, background: '#F07050', transition: 'width 0.5s ease' }} />
+          )}
+        </div>
+      )}
 
       {proposal.status === 'pending' && (
         <>

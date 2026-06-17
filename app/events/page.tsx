@@ -214,9 +214,26 @@ export default function EventsPage() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center py-16 gap-3">
-            <BearMascot size={70} mood="sleep" animate />
-            <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+          <div className="space-y-6">
+            {[0, 1].map((g) => (
+              <div key={g}>
+                <div className="h-4 w-28 rounded-full shimmer mb-3" />
+                <div className="space-y-2">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="bg-white rounded-2xl p-4" style={{ border: '1.5px solid #EDE8E3' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-11 h-11 rounded-2xl shimmer flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 w-3/4 rounded-full shimmer" />
+                          <div className="h-3 w-1/2 rounded-full shimmer" />
+                          <div className="h-3 w-full rounded-full shimmer" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : sortedDates.length === 0 ? (
           <div className="flex flex-col items-center py-16 gap-3">

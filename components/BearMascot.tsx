@@ -94,6 +94,11 @@ export default function BearMascot({
           30%  { opacity: 1; }
           100% { opacity: 0; transform: translate(6px, -22px) scale(1.1); }
         }
+        @keyframes thoughtPop {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50%       { transform: scale(1.12); opacity: 1; }
+        }
+        .thought-bubble { animation: thoughtPop 2s ease-in-out infinite; }
         .bear-body { ${bodyAnimation} }
         .wave-arm { ${waveArmAnimation} }
         .eye-l { animation: blink 4.5s ease-in-out infinite; transform-origin: 38px 52px; }
@@ -253,7 +258,17 @@ export default function BearMascot({
 
         {/* Thinking paw at chin */}
         {mood === 'thinking' && (
-          <ellipse cx="60" cy="76" rx="8" ry="5.5" fill="#EDD5A0" transform="rotate(-15 60 76)" />
+          <>
+            <ellipse cx="60" cy="76" rx="8" ry="5.5" fill="#EDD5A0" transform="rotate(-15 60 76)" />
+            {animate && (
+              <g className="thought-bubble">
+                <circle cx="74" cy="28" r="1.4" fill="#C8B8A8" />
+                <circle cx="78" cy="22" r="2.2" fill="#C8B8A8" />
+                <circle cx="83" cy="14" r="3.2" fill="#C8B8A8" />
+                <text x="78" y="17" fontSize="5" textAnchor="middle" fill="#9B8B7E" fontWeight="bold">...</text>
+              </g>
+            )}
+          </>
         )}
       </g>
 

@@ -392,11 +392,6 @@ function SettingsContent() {
           {saving ? '保存中...' : '設定を保存'}
         </button>
 
-        {saveSuccess && (
-          <div className="p-3 rounded-2xl text-sm text-center font-bold" style={{ background: '#F0FAF2', border: '1.5px solid #D4EDD8', color: '#3B8A5A' }}>
-            ✓ 設定を保存しました
-          </div>
-        )}
         {googleConnected && (
           <div className="p-3 rounded-2xl text-sm text-center font-bold" style={{ background: '#EEF3FC', border: '1.5px solid #C5D9FA', color: '#4285F4' }}>
             Googleカレンダーを連携しました

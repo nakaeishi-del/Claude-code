@@ -51,7 +51,7 @@ export default function GroupCard({ group }: GroupCardProps) {
 
   return (
     <Link href={`/groups/${group.id}`}>
-      <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-0.5 cursor-pointer relative"
+      <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer relative group"
         style={{ border: pendingVotes > 0 ? '1.5px solid #F5C4B0' : '1.5px solid #EDE8E3', boxShadow: pendingVotes > 0 ? '0 2px 16px rgba(240,112,80,0.12)' : '0 2px 12px rgba(0,0,0,0.04)' }}>
 
         {/* Pending vote badge */}
@@ -69,10 +69,15 @@ export default function GroupCard({ group }: GroupCardProps) {
               <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#9B8B7E' }}>{group.description}</p>
             )}
           </div>
-          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold shrink-0"
-            style={{ color: price.color, background: price.bg }}>
-            {price.label}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
+              style={{ color: price.color, background: price.bg }}>
+              {price.label}
+            </span>
+            <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C8B8A8' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5 mb-3">

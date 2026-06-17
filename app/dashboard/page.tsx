@@ -146,6 +146,23 @@ export default function DashboardPage() {
           <div className="absolute -right-4 -bottom-10 w-20 h-20 rounded-full opacity-10" style={{ background: 'white' }} />
         </div>
 
+        {/* Quick stats strip */}
+        {groups.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { label: 'グループ', value: groups.length, icon: '👥', color: '#F07050', bg: '#FFF0EC' },
+              { label: '投票待ち', value: totalPendingVotes, icon: '🗳️', color: '#C8A020', bg: '#FFFBEB' },
+              { label: '確定予定', value: confirmedProposals.length, icon: '✅', color: '#5BAF7A', bg: '#F0FAF2' },
+            ].map(({ label, value, icon, color, bg }) => (
+              <div key={label} className="rounded-2xl py-3 px-2 text-center" style={{ background: bg }}>
+                <div className="text-base mb-0.5">{icon}</div>
+                <div className="text-xl font-black" style={{ color }}>{value}</div>
+                <div className="text-[10px] font-bold" style={{ color }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Confirmed upcoming */}
         {confirmedProposals.length > 0 && (
           <section className="mb-6">

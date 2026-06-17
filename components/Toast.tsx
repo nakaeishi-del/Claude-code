@@ -6,6 +6,7 @@ interface ToastItem {
   id: number
   message: string
   type: 'success' | 'error' | 'info'
+  removing?: boolean
 }
 
 interface ToastContextType {
@@ -32,8 +33,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const id = ++nextId.current
     setToasts((prev) => [...prev, { id, message, type }])
     setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 3000)
+      setToasts((prev) => prev.map((t) => t.id === id ? { ...t, removing: true } : t))
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id))
+      }, 300)
+    }, 2700)
   }, [])
 
   return (
@@ -57,13 +61,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 alignItems: 'center',
                 gap: '8px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
-                animation: 'toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                animation: toast.removing
+                  ? 'toastOut 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards'
+                  : 'toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 whiteSpace: 'nowrap',
               }}>
               <style>{`
                 @keyframes toastIn {
                   from { opacity: 0; transform: translateY(16px) scale(0.9); }
                   to   { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes toastOut {
+                  from { opacity: 1; transform: translateY(0) scale(1); }
+                  to   { opacity: 0; transform: translateY(-8px) scale(0.92); }
                 }
               `}</style>
               <span style={{ fontWeight: 900 }}>{s.icon}</span>
