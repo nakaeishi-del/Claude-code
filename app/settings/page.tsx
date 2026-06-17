@@ -189,11 +189,43 @@ function SettingsContent() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
-      <main className="max-w-2xl mx-auto px-4 pt-7 pb-28 sm:pb-10 space-y-5">
-        <div className="mb-6">
+      <main className="max-w-2xl mx-auto px-4 pt-7 pb-28 sm:pb-10 space-y-5 page-enter">
+        <div className="mb-2">
           <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>設定</h1>
           <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>プロフィールと空き時間を設定しよう</p>
         </div>
+
+        {/* Profile completion bar */}
+        {(() => {
+          const steps = [
+            { done: !!avatarUrl, label: 'アイコン' },
+            { done: availability.length > 0, label: '空き時間' },
+            { done: user?.googleCalendarConnected ?? false, label: 'カレンダー連携' },
+          ]
+          const doneCount = steps.filter((s) => s.done).length
+          const pct = Math.round((doneCount / steps.length) * 100)
+          if (pct === 100) return null
+          return (
+            <div className="rounded-2xl p-4" style={{ background: '#FFF0EC', border: '1.5px solid #F5C4B0' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-black" style={{ color: '#C85030' }}>プロフィール完成度</span>
+                <span className="text-sm font-black" style={{ color: '#F07050' }}>{pct}%</span>
+              </div>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: '#F5D0C0' }}>
+                <div className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${pct}%`, background: '#F07050' }} />
+              </div>
+              <div className="flex gap-3 mt-3 flex-wrap">
+                {steps.filter((s) => !s.done).map((s) => (
+                  <span key={s.label} className="text-xs font-black flex items-center gap-1"
+                    style={{ color: '#F07050' }}>
+                    <span>○</span> {s.label}を設定しよう
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         <Card>
           <SLabel>プロフィール</SLabel>
