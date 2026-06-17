@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import BearMascot from '@/components/BearMascot'
+import { useToast } from '@/components/Toast'
 
 const GENRES = [
   { value: 'all',      label: '全て',      emoji: '✨' },
@@ -52,6 +53,7 @@ type Group = {
 
 export default function EventsPage() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [activeGenre, setActiveGenre] = useState('all')
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -110,7 +112,7 @@ export default function EventsPage() {
     setInviting(false)
     if (!res.ok) {
       const data = await res.json()
-      alert(data.error || '提案の作成に失敗しました')
+      showToast(data.error || '提案の作成に失敗しました', 'error')
       return
     }
     setInviteSent(true)
@@ -238,13 +240,14 @@ export default function EventsPage() {
           </div>
         ) : sortedDates.length === 0 ? (
           <div className="flex flex-col items-center py-16 gap-3">
-            <BearMascot size={80} mood="wink" />
-            <p className="font-bold" style={{ color: '#2D1B0E' }}>
+            <BearMascot size={80} mood={searchQuery ? 'thinking' : 'sad'} animate animationType="float" />
+            <p className="font-bold text-center" style={{ color: '#2D1B0E' }}>
               {searchQuery ? `「${searchQuery}」に一致するイベントはありません` : 'この月のイベントはありません'}
             </p>
             {searchQuery && (
               <button onClick={() => setSearchQuery('')}
-                className="text-sm font-black" style={{ color: '#F07050' }}>
+                className="text-sm font-black px-4 py-2 rounded-2xl"
+                style={{ background: '#FFF0EC', color: '#F07050' }}>
                 検索をクリア
               </button>
             )}
@@ -329,7 +332,7 @@ export default function EventsPage() {
       {inviteEvent && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setInviteEvent(null)} />
-          <div className="relative bg-white w-full max-w-2xl rounded-t-3xl p-6 pb-10"
+          <div className="slide-up relative bg-white w-full max-w-2xl rounded-t-3xl p-6 pb-10"
             style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}>
             {inviteSent ? (
               <div className="py-8 text-center flex flex-col items-center gap-3">
