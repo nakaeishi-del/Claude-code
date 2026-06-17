@@ -9,6 +9,7 @@ import GroupChat from '@/components/GroupChat'
 import BearMascot from '@/components/BearMascot'
 import Avatar from '@/components/Avatar'
 import Confetti from '@/components/Confetti'
+import { useToast } from '@/components/Toast'
 import Link from 'next/link'
 
 interface Member {
@@ -83,6 +84,7 @@ export default function GroupDetailPage() {
   const router = useRouter()
   const params = useParams()
   const groupId = params.id as string
+  const { showToast } = useToast()
 
   const [group, setGroup] = useState<Group | null>(null)
   const [myRole, setMyRole] = useState<string>('member')
@@ -180,8 +182,14 @@ export default function GroupDetailPage() {
       if (data.proposal?.status === 'confirmed') {
         setShowConfetti(true)
         setTimeout(() => setShowConfetti(false), 3000)
+        showToast('🎉 全員参加確定！', 'success')
+      } else {
+        const labels = { accept: '参加票を入れました', maybe: '未定票を入れました', decline: '欠席票を入れました' }
+        showToast(labels[vote], 'success')
       }
       await fetchData()
+    } else {
+      showToast('投票に失敗しました', 'error')
     }
     setVotingId(null)
   }
@@ -225,8 +233,9 @@ export default function GroupDetailPage() {
     if (!res.ok) {
       setInviteError(data.error || 'エラーが発生しました')
     } else {
-      setInviteSuccess(`${data.member.user.name}さんをグループに追加しました`)
+      showToast(`${data.member.user.name}さんを招待しました！`, 'success')
       setInviteEmail('')
+      setShowInvite(false)
       await fetchData()
     }
     setInviting(false)
@@ -235,6 +244,7 @@ export default function GroupDetailPage() {
   function copyInviteLink() {
     navigator.clipboard.writeText(`${window.location.origin}/join/${groupId}`).then(() => {
       setLinkCopied(true)
+      showToast('招待リンクをコピーしました', 'success')
       setTimeout(() => setLinkCopied(false), 2000)
     })
   }
