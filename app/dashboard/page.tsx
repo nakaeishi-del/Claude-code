@@ -59,6 +59,9 @@ export default function DashboardPage() {
     .flatMap((g) => g.latestProposal?.status === 'confirmed' ? [{ ...g.latestProposal, groupName: g.name, groupId: g.id }] : [])
     .sort((a, b) => a.proposedDate.localeCompare(b.proposedDate))
 
+  const totalPendingVotes = groups.reduce((sum, g) => sum + (g.pendingVoteCount ?? 0), 0)
+  const groupsNeedingInvite = groups.filter((g) => g.members.length === 1)
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
@@ -83,7 +86,19 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-black text-white leading-tight">
               おかえり、{user?.name} 👋
             </h1>
-            <p className="mt-1.5 text-sm text-white/80 font-bold">友達との次の約束、一緒に作ろう</p>
+            {totalPendingVotes > 0 ? (
+              <div className="mt-2.5 inline-flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-2xl">
+                <span className="text-sm">🗳️</span>
+                <span className="text-sm font-black text-white">{totalPendingVotes}件の投票を待っています</span>
+              </div>
+            ) : confirmedProposals.length > 0 ? (
+              <div className="mt-2.5 inline-flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-2xl">
+                <span className="text-sm">🎉</span>
+                <span className="text-sm font-black text-white">確定した予定があります</span>
+              </div>
+            ) : (
+              <p className="mt-1.5 text-sm text-white/80 font-bold">友達との次の約束、一緒に作ろう</p>
+            )}
           </div>
           {/* decorative circles */}
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20" style={{ background: 'white' }} />

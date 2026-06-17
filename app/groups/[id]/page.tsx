@@ -293,7 +293,26 @@ export default function GroupDetailPage() {
 
           {/* Members */}
           <div className="mt-5">
-            <p className="text-xs font-black mb-3" style={{ color: '#9B8B7E' }}>メンバー ({group.members.length}人)</p>
+            {(() => {
+              const withAvail = group.members.filter((m) => m.user.hasAvailability !== false).length
+              const ready = withAvail === group.members.length
+              return (
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-black" style={{ color: '#9B8B7E' }}>メンバー ({group.members.length}人)</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex gap-0.5">
+                      {group.members.map((m, i) => (
+                        <div key={m.id} className="w-2 h-2 rounded-full"
+                          style={{ background: m.user.hasAvailability !== false ? '#4ADE80' : '#EDE8E3' }} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-black" style={{ color: ready ? '#3B8A5A' : '#C8B8A8' }}>
+                      {ready ? '全員準備OK！' : `${withAvail}/${group.members.length}人設定済み`}
+                    </span>
+                  </div>
+                </div>
+              )
+            })()}
             <div className="flex flex-wrap gap-3">
               {group.members.map((m, i) => (
                 <div key={m.id} className="flex items-center gap-2">
@@ -555,11 +574,26 @@ export default function GroupDetailPage() {
                           ))}
                         </div>
                       </div>
-                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                        className="shrink-0 text-xs font-black px-3 py-2 rounded-xl"
-                        style={{ background: '#F5F0EB', color: '#6B5B4E' }}>
-                        地図
-                      </a>
+                      <div className="flex flex-col gap-1.5 shrink-0">
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-xs font-black px-3 py-2 rounded-xl text-center"
+                          style={{ background: '#F5F0EB', color: '#6B5B4E' }}>
+                          地図
+                        </a>
+                        <button
+                          onClick={async () => {
+                            const res = await fetch(`/api/events/${event.id}/invite`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ groupId }),
+                            })
+                            if (res.ok) { await fetchData(); setProposeError('') }
+                          }}
+                          className="text-xs font-black px-3 py-2 rounded-xl text-center transition-all active:scale-95"
+                          style={{ background: '#FFF0EC', color: '#F07050' }}>
+                          提案する
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
