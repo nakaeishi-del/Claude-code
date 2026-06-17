@@ -16,6 +16,14 @@ interface User {
   googleCalendarConnected: boolean
 }
 
+interface Achievement {
+  id: string
+  icon: string
+  label: string
+  desc: string
+  unlocked: boolean
+}
+
 // Resize an image file to a square data URL (JPEG, ~200px) for compact storage.
 function resizeImage(file: File, maxSize = 200): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -93,10 +101,15 @@ function SettingsContent() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarError, setAvatarError] = useState('')
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
+  const [achievements, setAchievements] = useState<Achievement[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchData = useCallback(async () => {
-    const [meRes, availRes] = await Promise.all([fetch('/api/auth/me'), fetch('/api/availability')])
+    const [meRes, availRes, achievementsRes] = await Promise.all([
+      fetch('/api/auth/me'),
+      fetch('/api/availability'),
+      fetch('/api/me/achievements'),
+    ])
     if (!meRes.ok) { router.push('/'); return }
     const meData = await meRes.json()
     const availData = await availRes.json()
@@ -105,6 +118,10 @@ function SettingsContent() {
     setEditName(meData.user.name)
     setAvatarUrl(meData.user.avatarUrl ?? null)
     setAvailability(availData.availability || [])
+    if (achievementsRes.ok) {
+      const achievementsData = await achievementsRes.json()
+      setAchievements(achievementsData.achievements || [])
+    }
     setLoading(false)
   }, [router])
 
@@ -257,6 +274,27 @@ function SettingsContent() {
               Googleカレンダーを連携する
             </a>
           )}
+        </Card>
+
+        <Card>
+          <SLabel>実績バッジ</SLabel>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {achievements.map((a) => (
+              <div
+                key={a.id}
+                className="rounded-2xl p-3"
+                style={{
+                  background: a.unlocked ? '#FFFFFF' : '#FAFAF8',
+                  border: a.unlocked ? '1.5px solid #EDE8E3' : '1.5px dashed #EDE8E3',
+                  opacity: a.unlocked ? 1 : 0.4,
+                }}
+              >
+                <div className="text-2xl">{a.icon}</div>
+                <p className="text-xs font-black mt-1" style={{ color: a.unlocked ? '#2D1B0E' : '#9B8B7E' }}>{a.label}</p>
+                <p className="text-[10px] font-bold mt-0.5" style={{ color: '#C8B8A8' }}>{a.desc}</p>
+              </div>
+            ))}
+          </div>
         </Card>
 
         <Card>
