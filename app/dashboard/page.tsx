@@ -62,6 +62,20 @@ export default function DashboardPage() {
   const totalPendingVotes = groups.reduce((sum, g) => sum + (g.pendingVoteCount ?? 0), 0)
   const groupsNeedingInvite = groups.filter((g) => g.members.length === 1)
 
+  const heroBearMood = totalPendingVotes > 0 ? 'thinking' : confirmedProposals.length > 0 ? 'celebrate' : groups.length === 0 ? 'wink' : 'happy'
+
+  function formatProposalDate(dateStr: string) {
+    const d = new Date(dateStr + 'T00:00:00')
+    const days = ['日', '月', '火', '水', '木', '金', '土']
+    return `${d.getMonth() + 1}月${d.getDate()}日（${days[d.getDay()]}）`
+  }
+
+  function daysUntil(dateStr: string): number {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const target = new Date(dateStr + 'T00:00:00')
+    return Math.round((target.getTime() - today.getTime()) / 86400000)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
@@ -79,30 +93,35 @@ export default function DashboardPage() {
 
       <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10 page-enter">
         {/* Hero welcome card */}
-        <div className="rounded-3xl px-6 py-8 mb-6 relative overflow-hidden"
+        <div className="rounded-3xl px-6 py-6 mb-6 relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #F07050 0%, #F09070 60%, #F0B090 100%)' }}>
-          <div className="relative z-10">
-            <p className="text-white/70 text-xs font-black uppercase tracking-widest mb-1">tomomeet</p>
-            <h1 className="text-2xl font-black text-white leading-tight">
-              おかえり、{user?.name} 👋
-            </h1>
-            {totalPendingVotes > 0 ? (
-              <div className="mt-2.5 inline-flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-2xl">
-                <span className="text-sm">🗳️</span>
-                <span className="text-sm font-black text-white">{totalPendingVotes}件の投票を待っています</span>
-              </div>
-            ) : confirmedProposals.length > 0 ? (
-              <div className="mt-2.5 inline-flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-2xl">
-                <span className="text-sm">🎉</span>
-                <span className="text-sm font-black text-white">確定した予定があります</span>
-              </div>
-            ) : (
-              <p className="mt-1.5 text-sm text-white/80 font-bold">友達との次の約束、一緒に作ろう</p>
-            )}
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="flex-shrink-0">
+              <BearMascot size={72} mood={heroBearMood} animate animationType={heroBearMood === 'celebrate' ? 'float' : 'breathe'} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white/70 text-xs font-black uppercase tracking-widest mb-0.5">tomomeet</p>
+              <h1 className="text-xl font-black text-white leading-tight">
+                おかえり、{user?.name} 👋
+              </h1>
+              {totalPendingVotes > 0 ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-white/25 px-3 py-1.5 rounded-2xl">
+                  <span className="text-xs">🗳️</span>
+                  <span className="text-xs font-black text-white">{totalPendingVotes}件の投票待ち</span>
+                </div>
+              ) : confirmedProposals.length > 0 ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-white/25 px-3 py-1.5 rounded-2xl">
+                  <span className="text-xs">🎉</span>
+                  <span className="text-xs font-black text-white">確定した予定があります</span>
+                </div>
+              ) : (
+                <p className="mt-1 text-xs text-white/80 font-bold">友達との次の約束、一緒に作ろう</p>
+              )}
+            </div>
           </div>
           {/* decorative circles */}
-          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20" style={{ background: 'white' }} />
-          <div className="absolute -right-4 -bottom-10 w-24 h-24 rounded-full opacity-10" style={{ background: 'white' }} />
+          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-15" style={{ background: 'white' }} />
+          <div className="absolute -right-4 -bottom-10 w-20 h-20 rounded-full opacity-10" style={{ background: 'white' }} />
         </div>
 
         {/* Confirmed upcoming */}
@@ -110,20 +129,30 @@ export default function DashboardPage() {
           <section className="mb-6">
             <SLabel>今後の確定予定 🎉</SLabel>
             <div className="mt-3 grid gap-3">
-              {confirmedProposals.map((p) => (
-                <div key={p.id} className="rounded-2xl p-4 flex items-center gap-4"
-                  style={{ background: 'linear-gradient(135deg, #F0FAF2, #E8F7EC)', border: '1.5px solid #BBF7D0' }}>
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: 'white' }}>🍽️</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-sm" style={{ color: '#2D1B0E' }}>{p.restaurantName}</p>
-                    <p className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{p.groupName}</p>
+              {confirmedProposals.map((p) => {
+                const days = daysUntil(p.proposedDate)
+                const isToday = days === 0
+                const isTomorrow = days === 1
+                const countdownLabel = isToday ? '🎉 今日！' : isTomorrow ? '明日！' : `あと${days}日`
+                const countdownColor = isToday ? '#F07050' : isTomorrow ? '#C8A020' : '#3B8A5A'
+                return (
+                  <div key={p.id} className="rounded-2xl p-4 flex items-center gap-4 cursor-pointer"
+                    onClick={() => router.push(`/groups/${p.groupId}`)}
+                    style={{ background: isToday ? 'linear-gradient(135deg, #FFF0EC, #FFE8E0)' : 'linear-gradient(135deg, #F0FAF2, #E8F7EC)', border: `1.5px solid ${isToday ? '#F5C4B0' : '#BBF7D0'}`, transition: 'opacity 0.2s' }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: 'white' }}>
+                      {isToday ? '🎊' : '🍽️'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-sm" style={{ color: '#2D1B0E' }}>{p.restaurantName}</p>
+                      <p className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{p.groupName} · {formatProposalDate(p.proposedDate)}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-base font-black" style={{ color: countdownColor }}>{countdownLabel}</p>
+                      <p className="text-[11px] font-bold" style={{ color: '#7AC8A0' }}>確定済み</p>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-black" style={{ color: '#3B8A5A' }}>{p.proposedDate}</p>
-                    <p className="text-xs font-bold" style={{ color: '#7AC8A0' }}>確定！</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         )}

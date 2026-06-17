@@ -78,6 +78,22 @@ export default function BearMascot({
           0%, 92%, 100% { transform: scaleY(1); }
           95% { transform: scaleY(0.1); }
         }
+        @keyframes sparkle {
+          0%   { opacity: 0; transform: scale(0.4) rotate(0deg); }
+          30%  { opacity: 1; }
+          70%  { opacity: 1; }
+          100% { opacity: 0; transform: scale(1.2) rotate(180deg); }
+        }
+        @keyframes sparkleFloat {
+          0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
+          40%  { opacity: 1; }
+          100% { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, -20px)) scale(1); }
+        }
+        @keyframes heartFloat {
+          0%   { opacity: 0; transform: translate(0,0) scale(0.5); }
+          30%  { opacity: 1; }
+          100% { opacity: 0; transform: translate(6px, -22px) scale(1.1); }
+        }
         .bear-body { ${bodyAnimation} }
         .wave-arm { ${waveArmAnimation} }
         .eye-l { animation: blink 4.5s ease-in-out infinite; transform-origin: 38px 52px; }
@@ -85,6 +101,12 @@ export default function BearMascot({
         .z1 { animation: zFloat 2.4s ease-out infinite; }
         .z2 { animation: zFloat 2.4s ease-out 0.8s infinite; }
         .z3 { animation: zFloat 2.4s ease-out 1.6s infinite; }
+        .sp1 { --sx: -10px; --sy: -18px; animation: sparkleFloat 2s ease-out infinite; }
+        .sp2 { --sx: 12px;  --sy: -16px; animation: sparkleFloat 2s ease-out 0.6s infinite; }
+        .sp3 { --sx: -4px;  --sy: -22px; animation: sparkleFloat 2s ease-out 1.2s infinite; }
+        .sp4 { --sx: 8px;   --sy: -14px; animation: sparkleFloat 2s ease-out 1.8s infinite; }
+        .hf1 { animation: heartFloat 2.2s ease-out infinite; }
+        .hf2 { animation: heartFloat 2.2s ease-out 1.1s infinite; }
       `}</style>
 
       <g className="bear-body">
@@ -241,6 +263,24 @@ export default function BearMascot({
           <text className="z1" x="72" y="38" fontSize="8" fontWeight="bold" fill="#9B8B7E">z</text>
           <text className="z2" x="78" y="30" fontSize="10" fontWeight="bold" fill="#9B8B7E">z</text>
           <text className="z3" x="84" y="21" fontSize="12" fontWeight="bold" fill="#9B8B7E">Z</text>
+        </>
+      )}
+
+      {/* Celebrate sparkles */}
+      {mood === 'celebrate' && animate && (
+        <>
+          <text className="sp1" x="12" y="50" fontSize="9" fill="#F5C842">✦</text>
+          <text className="sp2" x="82" y="55" fontSize="8" fill="#F07050">✦</text>
+          <text className="sp3" x="20" y="30" fontSize="10" fill="#5BC4BF">★</text>
+          <text className="sp4" x="74" y="40" fontSize="9" fill="#A78BFA">✦</text>
+        </>
+      )}
+
+      {/* Love hearts */}
+      {mood === 'love' && animate && (
+        <>
+          <text className="hf1" x="75" y="50" fontSize="11" fill="#E84A7A">♥</text>
+          <text className="hf2" x="14" y="52" fontSize="9" fill="#E84A7A">♥</text>
         </>
       )}
     </svg>

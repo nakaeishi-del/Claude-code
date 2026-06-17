@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import BearMascot from '@/components/BearMascot'
@@ -60,6 +60,9 @@ export default function EventsPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [inviting, setInviting] = useState(false)
   const [inviteSent, setInviteSent] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [burstingId, setBurstingId] = useState<string | null>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth() + 1
@@ -78,6 +81,8 @@ export default function EventsPage() {
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
   async function toggleLike(event: Event) {
+    setBurstingId(event.id)
+    setTimeout(() => setBurstingId(null), 420)
     const res = await fetch(`/api/events/${event.id}/like`, { method: 'POST' })
     if (res.status === 401) { router.push('/'); return }
     const data = await res.json()
@@ -112,7 +117,15 @@ export default function EventsPage() {
     setTimeout(() => { setInviteEvent(null); router.push(`/groups/${groupId}`) }, 1000)
   }
 
-  const eventsByDate = events.reduce<Record<string, Event[]>>((acc, event) => {
+  const filteredEvents = searchQuery.trim()
+    ? events.filter((e) =>
+        e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.area.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : events
+
+  const eventsByDate = filteredEvents.reduce<Record<string, Event[]>>((acc, event) => {
     if (!acc[event.date]) acc[event.date] = []
     acc[event.date].push(event)
     return acc
@@ -160,7 +173,7 @@ export default function EventsPage() {
           </button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-5" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           {GENRES.map((g) => (
             <button key={g.value} onClick={() => setActiveGenre(g.value)}
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-black transition-all"
@@ -172,6 +185,34 @@ export default function EventsPage() {
           ))}
         </div>
 
+        <div className="relative mb-5">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            style={{ color: '#C8B8A8' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            ref={searchRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="イベント・会場・エリアで検索"
+            className="w-full pl-9 pr-9 py-2.5 rounded-2xl text-sm font-bold outline-none"
+            style={{ background: 'white', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(''); searchRef.current?.focus() }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ background: '#EDE8E3', color: '#9B8B7E' }}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+
         {loading ? (
           <div className="flex flex-col items-center py-16 gap-3">
             <BearMascot size={70} mood="sleep" animate />
@@ -180,7 +221,15 @@ export default function EventsPage() {
         ) : sortedDates.length === 0 ? (
           <div className="flex flex-col items-center py-16 gap-3">
             <BearMascot size={80} mood="wink" />
-            <p className="font-bold" style={{ color: '#2D1B0E' }}>この月のイベントはありません</p>
+            <p className="font-bold" style={{ color: '#2D1B0E' }}>
+              {searchQuery ? `「${searchQuery}」に一致するイベントはありません` : 'この月のイベントはありません'}
+            </p>
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="text-sm font-black" style={{ color: '#F07050' }}>
+                検索をクリア
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
@@ -189,12 +238,12 @@ export default function EventsPage() {
                 <div className="text-sm font-black mb-2 px-1" style={{ color: dateColor(date) }}>
                   {formatDate(date)}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 stagger-children">
                   {eventsByDate[date].map((event) => {
                     const gs = genreStyle[event.genre] || { color: '#9B8B7E', bg: '#F5F0EB' }
                     return (
                       <div key={event.id} className="bg-white rounded-2xl p-4"
-                        style={{ border: '1.5px solid #EDE8E3' }}>
+                        style={{ border: `1.5px solid ${event.liked ? '#F5C4B0' : '#EDE8E3'}`, transition: 'border-color 0.2s' }}>
                         <div className="flex items-start gap-3">
                           <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
                             style={{ background: gs.bg }}>
@@ -212,7 +261,7 @@ export default function EventsPage() {
                                 )}
                               </div>
                               <button onClick={() => toggleLike(event)}
-                                className="flex-shrink-0 flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all active:scale-90"
+                                className={`flex-shrink-0 flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${burstingId === event.id ? 'heart-burst' : ''}`}
                                 style={{ color: event.liked ? '#F07050' : '#C8B8A8' }}>
                                 <svg className="w-5 h-5" fill={event.liked ? 'currentColor' : 'none'}
                                   stroke="currentColor" viewBox="0 0 24 24">
