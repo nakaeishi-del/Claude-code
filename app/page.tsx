@@ -1,8 +1,10 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import BearMascot from '@/components/BearMascot'
+
+type Mood = 'happy' | 'wave' | 'sleep' | 'wink' | 'excited' | 'celebrate' | 'love' | 'thinking'
 
 function LoginContent() {
   const router = useRouter()
@@ -13,6 +15,33 @@ function LoginContent() {
   const [error, setError] = useState('')
   const [loginData, setLoginData] = useState({ email: '', password: '' })
   const [registerData, setRegisterData] = useState({ name: '', email: '', password: '', confirmPassword: '' })
+  const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [shake, setShake] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setTimeout(() => setMounted(true), 50)
+  }, [])
+
+  // Determine bear mood based on context
+  function getBearMood(): Mood {
+    if (loading) return 'celebrate'
+    if (error) return 'sleep'
+    if (tab === 'register') {
+      if (registerData.name.length > 0 && focusedField === 'name') return 'excited'
+      if (focusedField === 'password' || focusedField === 'confirmPassword') return 'thinking'
+      return 'wave'
+    }
+    if (focusedField === 'password') return 'wink'
+    if (focusedField === 'email') return 'thinking'
+    return 'happy'
+  }
+
+  function triggerError(msg: string) {
+    setError(msg)
+    setShake(true)
+    setTimeout(() => setShake(false), 600)
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -24,15 +53,15 @@ function LoginContent() {
         body: JSON.stringify(loginData),
       })
       const data = await res.json()
-      if (!res.ok) setError(data.detail ? `${data.error}（${data.detail}）` : (data.error || 'ログインに失敗しました'))
+      if (!res.ok) triggerError(data.detail ? `${data.error}（${data.detail}）` : (data.error || 'ログインに失敗しました'))
       else router.push(redirect)
-    } catch { setError('通信エラーが発生しました') }
+    } catch { triggerError('通信エラーが発生しました') }
     finally { setLoading(false) }
   }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
-    if (registerData.password !== registerData.confirmPassword) { setError('パスワードが一致しません'); return }
+    if (registerData.password !== registerData.confirmPassword) { triggerError('パスワードが一致しません'); return }
     setLoading(true); setError('')
     try {
       const res = await fetch('/api/auth/register', {
@@ -41,27 +70,61 @@ function LoginContent() {
         body: JSON.stringify({ name: registerData.name, email: registerData.email, password: registerData.password }),
       })
       const data = await res.json()
-      if (!res.ok) setError(data.detail ? `${data.error}（${data.detail}）` : (data.error || '登録に失敗しました'))
+      if (!res.ok) triggerError(data.detail ? `${data.error}（${data.detail}）` : (data.error || '登録に失敗しました'))
       else router.push(redirect)
-    } catch { setError('通信エラーが発生しました') }
+    } catch { triggerError('通信エラーが発生しました') }
     finally { setLoading(false) }
   }
 
+  const mood = getBearMood()
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10" style={{ background: '#FFFDF9' }}>
+      <style>{`
+        @keyframes loginEnter {
+          from { opacity: 0; transform: translateY(20px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          15% { transform: translateX(-6px); }
+          30% { transform: translateX(6px); }
+          45% { transform: translateX(-5px); }
+          60% { transform: translateX(5px); }
+          75% { transform: translateX(-3px); }
+          90% { transform: translateX(3px); }
+        }
+        @keyframes bearMoodChange {
+          0%   { transform: scale(1); }
+          30%  { transform: scale(1.08) rotate(-3deg); }
+          60%  { transform: scale(0.95) rotate(2deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        .login-card-enter { animation: loginEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        .card-shake { animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+      `}</style>
+
       {/* Bear + Brand */}
-      <div className="flex flex-col items-center mb-8">
-        <BearMascot size={88} mood={tab === 'login' ? 'happy' : 'wave'} animate />
+      <div className="flex flex-col items-center mb-8" style={{
+        opacity: mounted ? 1 : 0,
+        transform: mounted ? 'translateY(0)' : 'translateY(-20px)',
+        transition: 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      }}>
+        <div style={{ transition: 'all 0.3s ease' }}>
+          <BearMascot size={96} mood={mood} animate={!loading}
+            animationType={loading ? 'bounce' : undefined} />
+        </div>
         <h1 className="mt-3 text-3xl font-black tracking-tight" style={{ color: '#F07050', letterSpacing: '-0.5px' }}>
           tomomeet
         </h1>
         <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>
-          友達との予定を、かんたんに。
+          {loading ? '処理中...' : '友達との予定を、かんたんに。'}
         </p>
       </div>
 
       {/* Card */}
-      <div className="w-full max-w-sm bg-white rounded-3xl p-7" style={{ border: '1.5px solid #EDE8E3', boxShadow: '0 2px 20px rgba(0,0,0,0.05)' }}>
+      <div className={`w-full max-w-sm bg-white rounded-3xl p-7 ${shake ? 'card-shake' : ''} ${mounted ? 'login-card-enter' : ''}`}
+        style={{ border: '1.5px solid #EDE8E3', boxShadow: '0 2px 20px rgba(0,0,0,0.05)', animationDelay: '0.1s' }}>
         {/* Tabs */}
         <div className="flex bg-gray-100 rounded-2xl p-1 mb-6">
           {(['login', 'register'] as const).map((t) => (
@@ -85,9 +148,15 @@ function LoginContent() {
         {tab === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <Field label="メールアドレス" type="email" placeholder="hello@example.com"
-              value={loginData.email} onChange={(v) => setLoginData({ ...loginData, email: v })} />
+              value={loginData.email}
+              onChange={(v) => setLoginData({ ...loginData, email: v })}
+              onFocus={() => setFocusedField('email')}
+              onBlur={() => setFocusedField(null)} />
             <Field label="パスワード" type="password" placeholder="••••••••"
-              value={loginData.password} onChange={(v) => setLoginData({ ...loginData, password: v })} />
+              value={loginData.password}
+              onChange={(v) => setLoginData({ ...loginData, password: v })}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)} />
             <Btn loading={loading} label="ログイン" />
             <p className="text-center text-xs pt-1" style={{ color: '#C8B8A8' }}>
               デモ: alice@demo.com / demo1234
@@ -96,14 +165,26 @@ function LoginContent() {
         ) : (
           <form onSubmit={handleRegister} className="space-y-4">
             <Field label="ニックネーム" type="text" placeholder="田中 さくら"
-              value={registerData.name} onChange={(v) => setRegisterData({ ...registerData, name: v })} />
+              value={registerData.name}
+              onChange={(v) => setRegisterData({ ...registerData, name: v })}
+              onFocus={() => setFocusedField('name')}
+              onBlur={() => setFocusedField(null)} />
             <Field label="メールアドレス" type="email" placeholder="hello@example.com"
-              value={registerData.email} onChange={(v) => setRegisterData({ ...registerData, email: v })} />
+              value={registerData.email}
+              onChange={(v) => setRegisterData({ ...registerData, email: v })}
+              onFocus={() => setFocusedField('email')}
+              onBlur={() => setFocusedField(null)} />
             <Field label="パスワード" type="password" placeholder="6文字以上"
-              value={registerData.password} onChange={(v) => setRegisterData({ ...registerData, password: v })} />
+              value={registerData.password}
+              onChange={(v) => setRegisterData({ ...registerData, password: v })}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)} />
             <Field label="パスワード確認" type="password" placeholder="もう一度入力"
-              value={registerData.confirmPassword} onChange={(v) => setRegisterData({ ...registerData, confirmPassword: v })} />
-            <Btn loading={loading} label="はじめる" />
+              value={registerData.confirmPassword}
+              onChange={(v) => setRegisterData({ ...registerData, confirmPassword: v })}
+              onFocus={() => setFocusedField('confirmPassword')}
+              onBlur={() => setFocusedField(null)} />
+            <Btn loading={loading} label="はじめる 🎉" />
           </form>
         )}
       </div>
@@ -123,18 +204,19 @@ export default function Home() {
   )
 }
 
-function Field({ label, type, placeholder, value, onChange }: {
-  label: string; type: string; placeholder: string; value: string; onChange: (v: string) => void
+function Field({ label, type, placeholder, value, onChange, onFocus, onBlur }: {
+  label: string; type: string; placeholder: string; value: string
+  onChange: (v: string) => void; onFocus?: () => void; onBlur?: () => void
 }) {
   return (
     <div>
       <label className="block text-xs font-bold mb-1.5" style={{ color: '#9B8B7E' }}>{label}</label>
       <input type={type} required value={value} placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={(e) => { e.target.style.borderColor = '#F07050'; e.target.style.background = '#FFFFFF'; onFocus?.() }}
+        onBlur={(e) => { e.target.style.borderColor = '#EDE8E3'; e.target.style.background = '#FAFAF8'; onBlur?.() }}
         className="w-full px-4 py-3.5 rounded-2xl text-sm transition-all outline-none"
         style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
-        onFocus={(e) => { e.target.style.borderColor = '#F07050'; e.target.style.background = '#FFFFFF' }}
-        onBlur={(e) => { e.target.style.borderColor = '#EDE8E3'; e.target.style.background = '#FAFAF8' }}
       />
     </div>
   )
@@ -143,9 +225,14 @@ function Field({ label, type, placeholder, value, onChange }: {
 function Btn({ loading, label }: { loading: boolean; label: string }) {
   return (
     <button type="submit" disabled={loading}
-      className="w-full py-4 rounded-2xl text-white font-bold text-sm mt-1 transition-opacity disabled:opacity-50"
+      className="w-full py-4 rounded-2xl text-white font-black text-sm mt-1 transition-all active:scale-[0.98] disabled:opacity-50"
       style={{ background: '#F07050', boxShadow: '0 4px 16px rgba(240,112,80,0.28)' }}>
-      {loading ? '...' : label}
+      {loading ? (
+        <span className="flex items-center justify-center gap-2">
+          <span className="animate-spin text-lg">⏳</span>
+          処理中...
+        </span>
+      ) : label}
     </button>
   )
 }
