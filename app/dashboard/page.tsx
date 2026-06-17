@@ -76,6 +76,15 @@ export default function DashboardPage() {
     return Math.round((target.getTime() - today.getTime()) / 86400000)
   }
 
+  function relativeTime(iso: string): string {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+    if (diff < 60) return 'たった今'
+    if (diff < 3600) return `${Math.floor(diff / 60)}分前`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}時間前`
+    if (diff < 86400 * 2) return '昨日'
+    return `${Math.floor(diff / 86400)}日前`
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
@@ -190,14 +199,23 @@ export default function DashboardPage() {
               <SLabel>最近のアクティビティ</SLabel>
               <div className="mt-3 space-y-3">
                 {activities.slice(0, 5).map((a) => (
-                  <div key={a.id} className="flex items-start gap-3">
+                  <div key={a.id}
+                    className="flex items-start gap-3 cursor-pointer rounded-xl p-1.5 -mx-1.5 transition-colors"
+                    onClick={() => router.push(`/groups/${a.groupId}`)}
+                    style={{ '--tw-bg-opacity': 1 } as React.CSSProperties}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FAFAF8' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 mt-0.5"
                       style={{ background: a.type === 'proposal' ? '#FFF0EC' : a.type === 'vote' ? '#F0FAF2' : a.type === 'message' ? '#EEF3FC' : '#F5EEFA' }}>
                       {a.type === 'proposal' ? '✨' : a.type === 'vote' ? '🗳️' : a.type === 'message' ? '💬' : '👋'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold leading-relaxed" style={{ color: '#2D1B0E' }}>{a.text}</p>
-                      <p className="text-[10px] font-bold mt-0.5" style={{ color: '#C8B8A8' }}>{a.groupName}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-[10px] font-bold" style={{ color: '#C8B8A8' }}>{a.groupName}</p>
+                        <span style={{ color: '#EDE8E3' }}>·</span>
+                        <p className="text-[10px] font-bold" style={{ color: '#C8B8A8' }}>{relativeTime(a.createdAt)}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
