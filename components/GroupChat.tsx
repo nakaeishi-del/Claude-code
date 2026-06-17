@@ -40,6 +40,7 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [newIds, setNewIds] = useState<Set<string>>(new Set())
+  const [unreadCount, setUnreadCount] = useState(0)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const lastIdRef = useRef<string | null>(null)
@@ -70,6 +71,9 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
             return next
           })
           setTimeout(() => setNewIds(new Set()), 800)
+          if (!isAtBottomRef.current) {
+            setUnreadCount((c) => c + newOnes.length)
+          }
           return [...prev, ...newOnes]
         })
       }
@@ -91,7 +95,15 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
   function handleScroll() {
     const el = scrollRef.current
     if (!el) return
-    isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60
+    isAtBottomRef.current = atBottom
+    if (atBottom) setUnreadCount(0)
+  }
+
+  function scrollToBottom() {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setUnreadCount(0)
+    isAtBottomRef.current = true
   }
 
   async function handleSend(e?: React.FormEvent, quickText?: string) {
@@ -114,7 +126,7 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
   }
 
   return (
-    <div className="flex flex-col" style={{ minHeight: 0 }}>
+    <div className="flex flex-col relative" style={{ minHeight: 0 }}>
       <style>{`
         @keyframes msgSlideRight {
           from { opacity: 0; transform: translateX(16px); }
@@ -179,6 +191,19 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
         )}
         <div ref={bottomRef} />
       </div>
+
+      {/* Unread messages indicator */}
+      {unreadCount > 0 && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black text-white z-10 transition-all"
+          style={{ background: '#F07050', boxShadow: '0 3px 12px rgba(240,112,80,0.40)' }}>
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          </svg>
+          新着{unreadCount}件
+        </button>
+      )}
 
       {/* Quick emoji bar */}
       <div className="flex gap-2 mt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
