@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import GroupCard from '@/components/GroupCard'
 import BearMascot from '@/components/BearMascot'
+import Confetti from '@/components/Confetti'
+import { useToast } from '@/components/Toast'
 
 interface User { id: string; name: string; email: string; priceRange: string; avatarUrl?: string | null }
 interface Group {
@@ -33,6 +35,8 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false)
   const [formError, setFormError] = useState('')
   const [form, setForm] = useState({ name: '', description: '', priceRange: 'mid' })
+  const [showConfetti, setShowConfetti] = useState(false)
+  const { showToast } = useToast()
 
   const fetchData = useCallback(async () => {
     const [meRes, groupsRes, activityRes] = await Promise.all([
@@ -53,6 +57,8 @@ export default function DashboardPage() {
     const data = await res.json()
     if (!res.ok) { setFormError(data.error || 'エラー'); setCreating(false); return }
     setShowModal(false); setForm({ name: '', description: '', priceRange: 'mid' }); await fetchData(); setCreating(false)
+    setShowConfetti(true); setTimeout(() => setShowConfetti(false), 3000)
+    showToast(`「${data.group?.name || 'グループ'}」を作成しました！`, 'success')
   }
 
   const confirmedProposals = groups
@@ -119,6 +125,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+      <Confetti trigger={showConfetti} />
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
       <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10 page-enter">
