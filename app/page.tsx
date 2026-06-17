@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import BearMascot from '@/components/BearMascot'
 
-type Mood = 'happy' | 'wave' | 'sleep' | 'wink' | 'excited' | 'celebrate' | 'love' | 'thinking'
+type Mood = 'happy' | 'wave' | 'sleep' | 'wink' | 'excited' | 'celebrate' | 'love' | 'thinking' | 'sad'
 
 function LoginContent() {
   const router = useRouter()
@@ -27,7 +27,7 @@ function LoginContent() {
   // Determine bear mood based on context
   function getBearMood(): Mood {
     if (loading) return 'celebrate'
-    if (error) return 'sleep'
+    if (error) return 'sad'
     if (tab === 'register') {
       if (registerData.name.length > 0 && focusedField === 'name') return 'excited'
       if (focusedField === 'password' || focusedField === 'confirmPassword') return 'thinking'

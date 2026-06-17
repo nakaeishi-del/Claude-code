@@ -87,10 +87,15 @@ export default function JoinGroupPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
-        <div className="flex flex-col items-center gap-3">
-          <BearMascot size={80} mood="sleep" animate />
-          <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#FFFDF9' }}>
+        <div className="w-full max-w-sm">
+          <div className="h-8 w-28 rounded-full shimmer mx-auto mb-8" />
+          <div className="bg-white rounded-3xl p-8" style={{ border: '1.5px solid #EDE8E3' }}>
+            <div className="w-20 h-20 rounded-full shimmer mx-auto mb-4" />
+            <div className="h-5 w-3/4 rounded-full shimmer mx-auto mb-2" />
+            <div className="h-3 w-1/2 rounded-full shimmer mx-auto mb-6" />
+            <div className="h-12 rounded-2xl shimmer" />
+          </div>
         </div>
       </div>
     )
@@ -115,7 +120,7 @@ export default function JoinGroupPage() {
             </>
           ) : error && !group ? (
             <>
-              <BearMascot size={80} mood="sleep" />
+              <BearMascot size={80} mood="sad" animate />
               <h1 className="text-lg font-black mt-4 mb-2" style={{ color: '#2D1B0E' }}>グループが見つかりません</h1>
               <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>{error}</p>
               <Link href="/dashboard"

@@ -175,10 +175,18 @@ function SettingsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
-        <div className="flex flex-col items-center gap-3">
-          <BearMascot size={80} mood="sleep" animate />
-          <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+      <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+        <div className="max-w-2xl mx-auto px-4 pt-0 pb-28 sm:pb-10 space-y-5">
+          {/* Profile banner skeleton */}
+          <div className="rounded-3xl h-24 shimmer" />
+          {/* Card skeletons */}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-2xl p-6" style={{ border: '1.5px solid #EDE8E3' }}>
+              <div className="h-3 w-20 rounded-full shimmer mb-4" />
+              <div className="h-4 w-full rounded-full shimmer mb-2" />
+              <div className="h-4 w-3/4 rounded-full shimmer" />
+            </div>
+          ))}
         </div>
       </div>
     )

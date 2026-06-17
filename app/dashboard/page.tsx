@@ -295,10 +295,10 @@ export default function DashboardPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center sm:p-4 z-50"
           onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md" style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}
+          <div className="bounce-in bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md" style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}
             onClick={(e) => e.stopPropagation()}>
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: '#EDE8E3' }} />
+              <div className="w-10 h-1.5 rounded-full" style={{ background: '#EDE8E3' }} />
             </div>
             <div className="p-6 pt-4">
               <div className="flex items-center justify-between mb-5">
@@ -341,9 +341,17 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <button type="submit" disabled={creating}
-                  className="w-full py-4 rounded-2xl text-white font-bold text-sm mt-1 disabled:opacity-50"
+                  className="w-full py-4 rounded-2xl text-white font-black text-sm mt-1 disabled:opacity-50 transition-all active:scale-[0.98]"
                   style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
-                  {creating ? '作成中...' : 'グループを作成'}
+                  {creating ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      作成中...
+                    </span>
+                  ) : 'グループを作成 🎉'}
                 </button>
               </form>
             </div>
