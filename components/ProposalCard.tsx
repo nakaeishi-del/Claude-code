@@ -1,6 +1,7 @@
 'use client'
 
 import BearMascot from './BearMascot'
+import ShareCard from './ShareCard'
 
 interface Vote {
   id: string
@@ -100,6 +101,18 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
                 <p className="text-xs font-bold" style={{ color: '#5BAF7A' }}>楽しんできてね 🎉</p>
               </div>
             </div>
+          </div>
+          <div className="mb-2">
+            <p className="text-xs font-black mb-2" style={{ color: '#9B8B7E' }}>シェア画像を生成</p>
+            <ShareCard
+              date={proposal.proposedDate}
+              time={proposal.proposedTime}
+              restaurant={proposal.restaurantName}
+              area={proposal.restaurantArea}
+              genre={proposal.restaurantGenre}
+              members={proposal.votes.filter(v => v.vote === 'accept').map(v => v.user.name)}
+              cost={proposal.estimatedCost}
+            />
           </div>
           <SharePlanButton
             date={proposal.proposedDate}
