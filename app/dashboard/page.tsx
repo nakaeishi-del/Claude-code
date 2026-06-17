@@ -240,7 +240,7 @@ export default function DashboardPage() {
           {groups.length > 0 && activities.length > 0 && (
             <div className="mb-6 bg-white rounded-2xl p-5" style={{ border: '1.5px solid #EDE8E3' }}>
               <SLabel>最近のアクティビティ</SLabel>
-              <div className="mt-3 space-y-3">
+              <div className="mt-3 space-y-3 stagger-children">
                 {activities.slice(0, 5).map((a) => (
                   <div key={a.id}
                     className="flex items-start gap-3 cursor-pointer rounded-xl p-1.5 -mx-1.5 transition-colors"

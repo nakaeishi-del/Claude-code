@@ -309,12 +309,24 @@ export default function GroupDetailPage() {
         </button>
 
         {/* Group header */}
-        <div className="bg-white rounded-2xl p-6 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
-          <h1 className="text-xl font-black" style={{ color: '#2D1B0E' }}>{group.name}</h1>
-          {group.description && (
-            <p className="text-sm mt-1" style={{ color: '#9B8B7E' }}>{group.description}</p>
-          )}
-          <p className="text-xs mt-1 font-bold" style={{ color: '#C8B8A8' }}>{priceLabels[group.priceRange]}</p>
+        <div className="bg-white rounded-2xl mb-5 overflow-hidden" style={{ border: '1.5px solid #EDE8E3' }}>
+          {/* Color banner */}
+          <div className="px-6 py-4 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #F07050, #F09070, #F0B090, #F07864)', backgroundSize: '300% 300%', animation: 'gradientShift 8s ease infinite' }}>
+            <style>{`@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
+            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-15" style={{ background: 'white' }} />
+            <div className="absolute -right-2 -bottom-8 w-16 h-16 rounded-full opacity-10" style={{ background: 'white' }} />
+            <div className="relative z-10">
+              <h1 className="text-xl font-black text-white leading-tight">{group.name}</h1>
+              {group.description && (
+                <p className="text-sm mt-0.5 font-bold text-white/75 line-clamp-1">{group.description}</p>
+              )}
+              <span className="mt-2 inline-block text-[11px] font-black text-white/85 bg-white/20 px-2.5 py-0.5 rounded-full">
+                {priceLabels[group.priceRange]}
+              </span>
+            </div>
+          </div>
+          <div className="p-6 pt-5">
 
           {/* Members */}
           <div className="mt-5">
@@ -441,6 +453,7 @@ export default function GroupDetailPage() {
               </button>
             )}
           </div>
+          </div>{/* end inner p-6 */}
         </div>
 
         {/* Availability nudge */}
