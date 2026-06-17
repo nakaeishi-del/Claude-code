@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 const WEEKDAYS = [
   { label: '月', dow: 1 },
   { label: '火', dow: 2 },
@@ -42,6 +44,7 @@ function DayCard({
   type: 'free' | 'busy' | null
   onToggle: () => void
 }) {
+  const [popping, setPopping] = useState(false)
   const bg = type === 'free' ? '#7AC8A0' : type === 'busy' ? '#F07050' : '#FAFAF8'
   const border = type === 'free' ? '#7AC8A0' : type === 'busy' ? '#F07050' : '#EDE8E3'
   const labelColor = getDayLabelColor(dow, type)
@@ -50,10 +53,16 @@ function DayCard({
   const icon = type === 'free' ? '✓' : type === 'busy' ? '✕' : '?'
   const statusLabel = type === 'free' ? '空き' : type === 'busy' ? 'NG' : '未設定'
 
+  function handleClick() {
+    setPopping(true)
+    setTimeout(() => setPopping(false), 300)
+    onToggle()
+  }
+
   return (
     <button
-      onClick={onToggle}
-      className="flex flex-col items-center justify-between rounded-2xl transition-all active:scale-95 select-none"
+      onClick={handleClick}
+      className={`flex flex-col items-center justify-between rounded-2xl transition-colors select-none ${popping ? 'vote-pop' : ''}`}
       style={{
         background: bg,
         border: `1.5px solid ${border}`,

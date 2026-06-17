@@ -51,6 +51,10 @@ export default function GroupCard({ group }: GroupCardProps) {
 
   const isConfirmed = proposal?.status === 'confirmed'
 
+  const hasRecentActivity = group.lastMessage
+    ? (Date.now() - new Date(group.lastMessage.createdAt).getTime()) < 3600000
+    : false
+
   return (
     <Link href={`/groups/${group.id}`}>
       <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer relative group"
@@ -63,6 +67,12 @@ export default function GroupCard({ group }: GroupCardProps) {
         {(pendingVotes > 0 || isConfirmed) && (
           <div className="absolute top-0 left-4 right-4 h-0.5 rounded-full"
             style={{ background: pendingVotes > 0 ? '#F07050' : '#5BAF7A' }} />
+        )}
+
+        {/* Recent activity dot */}
+        {hasRecentActivity && pendingVotes === 0 && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full gentle-pulse"
+            style={{ background: '#4ADE80', border: '2px solid white' }} />
         )}
 
         {/* Pending vote badge */}
