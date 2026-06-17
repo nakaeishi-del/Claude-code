@@ -13,7 +13,7 @@ interface Proposal {
   status: string
   proposedDate: string
   restaurantName: string
-  votes: { vote: string }[]
+  votes: { userId?: string }[]
 }
 
 interface GroupCardProps {
@@ -25,6 +25,8 @@ interface GroupCardProps {
     members: { user: Member }[]
     memberCount?: number
     latestProposal?: Proposal | null
+    pendingVoteCount?: number
+    lastMessage?: { content: string; user: { name: string }; createdAt: string } | null
   }
 }
 
@@ -40,6 +42,7 @@ export default function GroupCard({ group }: GroupCardProps) {
   const members = group.members || []
   const proposal = group.latestProposal
   const price = priceLabels[group.priceRange] || { label: group.priceRange, color: '#9B8B7E', bg: '#F5F0EB' }
+  const pendingVotes = group.pendingVoteCount || 0
 
   const statusLabel = proposal?.status === 'confirmed' ? '確定済み' : proposal?.status === 'pending' ? '投票中' : null
   const statusStyle = proposal?.status === 'confirmed'
@@ -48,8 +51,17 @@ export default function GroupCard({ group }: GroupCardProps) {
 
   return (
     <Link href={`/groups/${group.id}`}>
-      <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-0.5 cursor-pointer"
-        style={{ border: '1.5px solid #EDE8E3', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+      <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-0.5 cursor-pointer relative"
+        style={{ border: pendingVotes > 0 ? '1.5px solid #F5C4B0' : '1.5px solid #EDE8E3', boxShadow: pendingVotes > 0 ? '0 2px 16px rgba(240,112,80,0.12)' : '0 2px 12px rgba(0,0,0,0.04)' }}>
+
+        {/* Pending vote badge */}
+        {pendingVotes > 0 && (
+          <div className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1.5 rounded-full text-white text-[11px] font-black flex items-center justify-center"
+            style={{ background: '#F07050', boxShadow: '0 2px 6px rgba(240,112,80,0.4)' }}>
+            {pendingVotes}
+          </div>
+        )}
+
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0 mr-2">
             <h3 className="font-black text-base truncate" style={{ color: '#2D1B0E' }}>{group.name}</h3>
@@ -79,22 +91,34 @@ export default function GroupCard({ group }: GroupCardProps) {
           <span className="text-xs ml-1 font-bold" style={{ color: '#C8B8A8' }}>{members.length}人</span>
         </div>
 
-        {proposal ? (
-          <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #F5F0EB' }}>
-            <div className="text-xs truncate flex-1 mr-2 font-bold" style={{ color: '#6B5B4E' }}>
-              {proposal.proposedDate.slice(5).replace('-', '/')} · {proposal.restaurantName}
-            </div>
-            {statusLabel && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-bold flex-shrink-0" style={statusStyle}>
-                {statusLabel}
+        <div className="pt-3" style={{ borderTop: '1px solid #F5F0EB' }}>
+          {pendingVotes > 0 && (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full animate-pulse"
+                style={{ background: '#FFF0EC', color: '#F07050' }}>
+                🗳️ あなたの投票を待っています
               </span>
-            )}
-          </div>
-        ) : (
-          <div className="pt-3" style={{ borderTop: '1px solid #F5F0EB' }}>
+            </div>
+          )}
+          {proposal ? (
+            <div className="flex items-center justify-between">
+              <div className="text-xs truncate flex-1 mr-2 font-bold" style={{ color: '#6B5B4E' }}>
+                {proposal.proposedDate.slice(5).replace('-', '/')} · {proposal.restaurantName}
+              </div>
+              {statusLabel && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-bold flex-shrink-0" style={statusStyle}>
+                  {statusLabel}
+                </span>
+              )}
+            </div>
+          ) : group.lastMessage ? (
+            <div className="text-xs font-bold truncate" style={{ color: '#9B8B7E' }}>
+              💬 {group.lastMessage.user.name}: {group.lastMessage.content}
+            </div>
+          ) : (
             <p className="text-xs font-bold" style={{ color: '#C8B8A8' }}>提案はまだありません</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </Link>
   )

@@ -5,11 +5,13 @@ export interface Restaurant {
   priceRange: 'budget' | 'mid' | 'high'
   rating: number
   description: string
+  featured?: boolean
+  sponsorTag?: string
 }
 
 const restaurants: Restaurant[] = [
   // === BUDGET ===
-  { name: '居酒屋 新宿 いろは', area: '新宿', genre: '居酒屋', priceRange: 'budget', rating: 4.1, description: 'アットホームな雰囲気で地酒と旬の料理を楽しめる居酒屋' },
+  { name: '居酒屋 新宿 いろは', area: '新宿', genre: '居酒屋', priceRange: 'budget', rating: 4.1, description: 'アットホームな雰囲気で地酒と旬の料理を楽しめる居酒屋', featured: true, sponsorTag: 'おすすめ' },
   { name: 'ラーメン 中目黒 麺道場', area: '中目黒', genre: 'ラーメン', priceRange: 'budget', rating: 4.4, description: '豚骨醤油スープの濃厚ラーメンが人気の専門店' },
   { name: 'カフェ 渋谷 ブランシュ', area: '渋谷', genre: 'カフェ', priceRange: 'budget', rating: 4.0, description: 'こだわりのスペシャルティコーヒーとスイーツのカフェ' },
   { name: '韓国料理 新宿 ハニャン', area: '新宿', genre: '韓国料理', priceRange: 'budget', rating: 4.2, description: '本場韓国の味を再現したサムギョプサルとチゲ鍋' },
@@ -29,7 +31,7 @@ const restaurants: Restaurant[] = [
   { name: '鶏料理 学芸大学 にわとり', area: '学芸大学', genre: '鶏料理', priceRange: 'budget', rating: 4.1, description: 'ブランド地鶏を使った焼き鳥と鍋料理の店' },
 
   // === MID ===
-  { name: '炭火焼き 渋谷 山本', area: '渋谷', genre: '焼肉', priceRange: 'mid', rating: 4.3, description: '厳選黒毛和牛を炭火で豪快に焼く人気の焼肉店' },
+  { name: '炭火焼き 渋谷 山本', area: '渋谷', genre: '焼肉', priceRange: 'mid', rating: 4.3, description: '厳選黒毛和牛を炭火で豪快に焼く人気の焼肉店', featured: true, sponsorTag: 'おすすめ' },
   { name: 'イタリアン 代官山 テラッツァ', area: '代官山', genre: 'イタリアン', priceRange: 'mid', rating: 4.5, description: 'テラス席で食べる本格ナポリピッツァとパスタ' },
   { name: 'バル 恵比寿 エル・スール', area: '恵比寿', genre: 'スペイン料理', priceRange: 'mid', rating: 4.3, description: '本格タパスとパエリアが楽しめるスペインバル' },
   { name: 'パスタ 中目黒 ポルチーニ', area: '中目黒', genre: 'イタリアン', priceRange: 'mid', rating: 4.4, description: '手打ちパスタとトリュフ料理が自慢のトラットリア' },
@@ -49,7 +51,7 @@ const restaurants: Restaurant[] = [
   { name: 'しゃぶしゃぶ 新宿 彩膳', area: '新宿', genre: 'しゃぶしゃぶ', priceRange: 'mid', rating: 4.3, description: '黒毛和牛と豆乳スープの体に優しいしゃぶしゃぶ' },
 
   // === HIGH ===
-  { name: '鮨 銀座 一', area: '銀座', genre: '寿司', priceRange: 'high', rating: 4.8, description: '江戸前寿司の真髄を体験できる老舗寿司店' },
+  { name: '鮨 銀座 一', area: '銀座', genre: '寿司', priceRange: 'high', rating: 4.8, description: '江戸前寿司の真髄を体験できる老舗寿司店', featured: true, sponsorTag: 'おすすめ' },
   { name: 'ビストロ 恵比寿 シェ・ポール', area: '恵比寿', genre: 'フレンチ', priceRange: 'high', rating: 4.6, description: '本格フランス料理をカジュアルに楽しめるビストロ' },
   { name: '天ぷら 表参道 天よし', area: '表参道', genre: '天ぷら', priceRange: 'high', rating: 4.7, description: '旬の食材を使った江戸前天ぷらのカウンタースタイル店' },
   { name: '和食 六本木 菊水', area: '六本木', genre: '和食', priceRange: 'high', rating: 4.9, description: '四季を感じる懐石料理を個室でゆっくりと楽しめる名店' },
@@ -66,13 +68,11 @@ const restaurants: Restaurant[] = [
   { name: '懐石 四谷 如是', area: '四谷', genre: '和食', priceRange: 'high', rating: 4.8, description: '四季折々の食材を使う本格茶懐石料理' },
 ]
 
-export function getRestaurantSuggestions(
-  priceRange: string,
-  count: number = 1
-): Restaurant[] {
+export function getRestaurantSuggestions(priceRange: string, count = 3): Restaurant[] {
   const filtered = restaurants.filter((r) => r.priceRange === priceRange)
-  const pool = filtered.length > 0 ? filtered : restaurants
-
-  const shuffled = [...pool].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, Math.min(count, shuffled.length))
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5)
+  // Put featured ones first
+  const featured = shuffled.filter((r) => r.featured)
+  const others = shuffled.filter((r) => !r.featured)
+  return [...featured, ...others].slice(0, count)
 }

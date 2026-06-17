@@ -57,6 +57,8 @@ interface RestaurantSuggestion {
   priceRange: string
   rating: number
   description: string
+  featured?: boolean
+  sponsorTag?: string
 }
 
 interface LikedEvent {
@@ -526,7 +528,13 @@ export default function GroupDetailPage() {
                         🍽️
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-black text-sm" style={{ color: '#2D1B0E' }}>{r.name}</div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="font-black text-sm" style={{ color: '#2D1B0E' }}>{r.name}</div>
+                          {r.sponsorTag && (
+                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                              style={{ background: '#FFF0EC', color: '#F07050' }}>{r.sponsorTag}</span>
+                          )}
+                        </div>
                         <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{r.area} · {r.genre}</div>
                         <div className="text-xs mt-1 line-clamp-1" style={{ color: '#C8B8A8' }}>{r.description}</div>
                       </div>
