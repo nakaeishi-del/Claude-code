@@ -115,8 +115,19 @@ export default function DashboardPage() {
 
       <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10 page-enter">
         {/* Hero welcome card */}
-        <div className="rounded-3xl px-6 py-6 mb-6 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #F07050 0%, #F09070 60%, #F0B090 100%)' }}>
+        <div className="rounded-3xl px-6 py-6 mb-6 relative overflow-hidden hero-gradient">
+          <style>{`
+            @keyframes gradientShift {
+              0%   { background-position: 0% 50%; }
+              50%  { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            .hero-gradient {
+              background: linear-gradient(135deg, #F07050, #F09070, #F0B090, #F07864);
+              background-size: 300% 300%;
+              animation: gradientShift 8s ease infinite;
+            }
+          `}</style>
           <div className="relative z-10 flex items-center gap-4">
             <div className="flex-shrink-0">
               <BearMascot size={72} mood={heroBearMood} animate animationType={heroBearMood === 'celebrate' ? 'float' : 'breathe'} />

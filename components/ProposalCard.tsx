@@ -32,10 +32,10 @@ interface ProposalCardProps {
   loading?: boolean
 }
 
-const statusStyles: Record<string, { color: string; bg: string; label: string }> = {
-  pending:   { color: '#F07050', bg: '#FFF0EC', label: '投票中' },
-  confirmed: { color: '#5BAF7A', bg: '#F0FAF2', label: '確定' },
-  cancelled: { color: '#C8B8A8', bg: '#F5F0EB', label: 'キャンセル' },
+const statusStyles: Record<string, { color: string; bg: string; label: string; icon: string }> = {
+  pending:   { color: '#F07050', bg: '#FFF0EC', label: '投票中', icon: '🗳️' },
+  confirmed: { color: '#5BAF7A', bg: '#F0FAF2', label: '確定！', icon: '✅' },
+  cancelled: { color: '#C8B8A8', bg: '#F5F0EB', label: 'キャンセル', icon: '✕' },
 }
 
 const voteConfig = {
@@ -90,6 +90,9 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
   const dateLabel = dateObj.toLocaleDateString('ja-JP', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
   })
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const daysUntil = Math.round((dateObj.getTime() - today.getTime()) / 86400000)
+  const daysLabel = daysUntil === 0 ? '今日！' : daysUntil === 1 ? '明日！' : daysUntil > 0 ? `あと${daysUntil}日` : null
 
   const st = statusStyles[proposal.status] || statusStyles.cancelled
   const borderColor = proposal.status === 'confirmed' ? '#D4EDD8'
@@ -131,14 +134,23 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
       )}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <span className="inline-flex text-[11px] px-2.5 py-1 rounded-full font-black mb-2"
+          <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-black mb-2"
             style={{ color: st.color, background: st.bg }}>
-            {st.label}
+            <span>{st.icon}</span>
+            <span>{st.label}</span>
           </span>
           <div className="text-base font-black" style={{ color: '#2D1B0E' }}>{dateLabel}</div>
           <div className="text-sm mt-0.5" style={{ color: '#9B8B7E' }}>{proposal.proposedTime}〜</div>
         </div>
-        <div className="text-xs font-bold" style={{ color: '#C8B8A8' }}>{proposal.createdBy.name}が提案</div>
+        <div className="text-right">
+          {daysLabel && proposal.status !== 'cancelled' && (
+            <div className="text-base font-black mb-1"
+              style={{ color: daysUntil === 0 ? '#F07050' : daysUntil === 1 ? '#C8A020' : '#3B8A5A' }}>
+              {daysLabel}
+            </div>
+          )}
+          <div className="text-xs font-bold" style={{ color: '#C8B8A8' }}>{proposal.createdBy.name}が提案</div>
+        </div>
       </div>
 
       <div className="rounded-2xl p-4 mb-4" style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3' }}>
