@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import BearMascot from './BearMascot'
 import ShareCard from './ShareCard'
+import { useToast } from './Toast'
 
 interface Vote {
   id: string
@@ -45,12 +46,15 @@ const voteConfig = {
 }
 
 function SharePlanButton({ date, restaurant, area }: { date: string; restaurant: string; area: string }) {
+  const { showToast } = useToast()
   const text = `🍽️ ${date} に ${area}の「${restaurant}」に行くことになった！友達と tomomeet で計画したよ✨\nhttps://tomomeet.vercel.app`
   const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`
 
   function copyText() {
     navigator.clipboard.writeText(text).then(() => {
-      alert('コピーしました！')
+      showToast('コピーしました！', 'success')
+    }).catch(() => {
+      showToast('コピーに失敗しました', 'error')
     })
   }
 
@@ -228,7 +232,16 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
 
       {proposal.status === 'pending' && (
         <>
-          <div className="flex gap-2">
+          <div className="flex gap-2 relative">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-2xl z-10"
+                style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(2px)' }}>
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" style={{ color: '#F07050' }}>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              </div>
+            )}
             {(['accept', 'maybe', 'decline'] as const).map((v) => {
               const cfg = voteConfig[v]
               const isActive = myVote?.vote === v
@@ -241,7 +254,7 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-[0.97] ${isPopping ? 'vote-pop' : ''}`}
                   style={isActive
                     ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}`, boxShadow: `0 3px 12px ${cfg.active.bg}44` }
-                    : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3', opacity: loading ? 0.5 : 1 }
+                    : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3' }
                   }
                 >
                   <span className="mr-1.5">{cfg.icon}</span>{cfg.label}
