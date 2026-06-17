@@ -213,7 +213,8 @@ export default function DashboardPage() {
                       <p className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{p.groupName} · {formatProposalDate(p.proposedDate)}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-base font-black" style={{ color: countdownColor }}>{countdownLabel}</p>
+                      <p className={`text-base font-black ${isToday || isTomorrow ? 'gentle-pulse' : ''}`}
+                        style={{ color: countdownColor }}>{countdownLabel}</p>
                       <p className="text-[11px] font-bold" style={{ color: '#7AC8A0' }}>確定済み</p>
                     </div>
                   </div>

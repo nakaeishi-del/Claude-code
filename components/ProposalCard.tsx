@@ -148,7 +148,7 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
         </div>
         <div className="text-right">
           {daysLabel && proposal.status !== 'cancelled' && (
-            <div className="text-base font-black mb-1"
+            <div className={`text-base font-black mb-1 ${daysUntil <= 1 ? 'gentle-pulse' : ''}`}
               style={{ color: daysUntil === 0 ? '#F07050' : daysUntil === 1 ? '#C8A020' : '#3B8A5A' }}>
               {daysLabel}
             </div>
