@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#F07050"/>
+  <!-- Ears -->
+  <circle cx="22" cy="30" r="12" fill="#EDD5A0"/>
+  <circle cx="22" cy="30" r="7" fill="#F0AEA4"/>
+  <circle cx="78" cy="30" r="12" fill="#EDD5A0"/>
+  <circle cx="78" cy="30" r="7" fill="#F0AEA4"/>
+  <!-- Head -->
+  <circle cx="50" cy="55" r="36" fill="#F5E3B8"/>
+  <!-- Muzzle -->
+  <ellipse cx="50" cy="66" rx="15" ry="10" fill="#FAEFD4"/>
+  <!-- Eyes -->
+  <circle cx="38" cy="50" r="5" fill="#2D1B0E"/>
+  <circle cx="62" cy="50" r="5" fill="#2D1B0E"/>
+  <circle cx="40" cy="48" r="1.8" fill="white"/>
+  <circle cx="64" cy="48" r="1.8" fill="white"/>
+  <!-- Nose -->
+  <ellipse cx="50" cy="60" rx="3" ry="2.2" fill="#7A4020"/>
+  <!-- Smile -->
+  <path d="M43 65 Q50 72 57 65" stroke="#7A4020" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <!-- Blush -->
+  <circle cx="28" cy="60" r="7" fill="#FFB0A0" opacity="0.3"/>
+  <circle cx="72" cy="60" r="7" fill="#FFB0A0" opacity="0.3"/>
+</svg>

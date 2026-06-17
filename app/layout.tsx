@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   description: '友達グループの空き時間を自動でマッチング。お店の提案から投票まで一括管理。',
   manifest: '/manifest.json',
   keywords: ['友達', '予定', 'グループ', '食事', 'マッチング'],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   openGraph: {
     title: 'tomomeet - 友達との予定を、かんたんに',
     description: '友達グループの空き時間を自動でマッチング。お店の提案から投票まで一括管理。',
