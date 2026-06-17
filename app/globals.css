@@ -97,3 +97,25 @@
 .gentle-pulse {
   animation: gentlePulse 2s ease-in-out infinite;
 }
+
+/* Shimmer loading skeleton */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, #F5F0EB 0%, #FAFAF8 40%, #FFF8F5 50%, #FAFAF8 60%, #F5F0EB 100%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Tab pop on bottom nav */
+@keyframes tabPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  70%  { transform: scale(0.93); }
+  100% { transform: scale(1); }
+}
+.tab-pop {
+  animation: tabPop 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}

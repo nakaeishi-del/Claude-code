@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import AvailabilityGrid from '@/components/AvailabilityGrid'
 import BearMascot from '@/components/BearMascot'
 import Avatar from '@/components/Avatar'
+import { useToast } from '@/components/Toast'
 
 interface User {
   id: string
@@ -93,6 +94,7 @@ function SettingsContent() {
   const googleError = searchParams.get('error')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
@@ -171,6 +173,7 @@ function SettingsContent() {
     await fetchData()
     setSaving(false)
     setSaveSuccess(true)
+    showToast('設定を保存しました', 'success')
     setTimeout(() => setSaveSuccess(false), 3000)
   }
 

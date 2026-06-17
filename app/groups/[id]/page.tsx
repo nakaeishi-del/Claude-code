@@ -534,12 +534,14 @@ export default function GroupDetailPage() {
 
         {group.proposals.length === 0 && (
           <div className="mb-6 rounded-2xl p-6 text-center" style={{ background: '#FAFAF8', border: '1.5px dashed #EDE8E3' }}>
-            <div className="text-3xl mb-3">🍽️</div>
+            <div className="flex justify-center mb-3">
+              <BearMascot size={70} mood="thinking" animate animationType="float" />
+            </div>
             <div className="font-black text-sm mb-1" style={{ color: '#2D1B0E' }}>まだ提案がありません</div>
             <div className="text-xs font-bold mb-4" style={{ color: '#C8B8A8' }}>
-              上の「自動提案する」ボタンを押すと<br/>AIがお店と日程を自動で提案してくれます
+              ボタンを押すとAIが最適なお店と日程を<br/>自動で提案してくれます
             </div>
-            <div className="flex gap-2 justify-center text-xs font-black" style={{ color: '#9B8B7E' }}>
+            <div className="flex gap-2 justify-center text-xs font-black flex-wrap" style={{ color: '#9B8B7E' }}>
               <span className="flex items-center gap-1">
                 <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{ background: '#F07050' }}>1</span>
                 空き時間を登録
@@ -566,6 +568,11 @@ export default function GroupDetailPage() {
               {likedEvents.map(({ event, likedBy }) => {
                 const genreEmoji: Record<string, string> = { music: '🎵', food: '🍜', sports: '⚽', art: '🎨', theater: '🎭', festival: '🎉' }
                 const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(event.venue + ' ' + event.area)}`
+                const evtDate = (() => {
+                  const d = new Date(event.date + 'T00:00:00')
+                  const days = ['日', '月', '火', '水', '木', '金', '土']
+                  return `${d.getMonth() + 1}月${d.getDate()}日（${days[d.getDay()]}）`
+                })()
                 return (
                   <div key={event.id} className="bg-white rounded-2xl p-4" style={{ border: '1.5px solid #EDE8E3' }}>
                     <div className="flex items-start gap-3">
@@ -574,7 +581,7 @@ export default function GroupDetailPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-black text-sm leading-snug" style={{ color: '#2D1B0E' }}>{event.title}</div>
-                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{event.date} · {event.venue}（{event.area}）</div>
+                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{evtDate} · {event.venue}（{event.area}）</div>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           {likedBy.map((u) => (
                             <span key={u.id} className="text-[11px] px-2 py-0.5 rounded-full font-black"

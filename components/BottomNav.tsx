@@ -54,15 +54,6 @@ export default function BottomNav() {
 
   return (
     <>
-      <style>{`
-        @keyframes tabPop {
-          0%   { transform: scale(1) translateY(0); }
-          40%  { transform: scale(1.2) translateY(-3px); }
-          70%  { transform: scale(0.92) translateY(1px); }
-          100% { transform: scale(1) translateY(0); }
-        }
-        .tab-icon-tapped { animation: tabPop 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
-      `}</style>
       <nav className="fixed bottom-0 left-0 right-0 bg-white sm:hidden z-50"
         style={{ borderTop: '1.5px solid #EDE8E3', boxShadow: '0 -4px 20px rgba(0,0,0,0.06)' }}>
         <div className="flex">
@@ -92,7 +83,7 @@ export default function BottomNav() {
                   </span>
                 )}
 
-                <span className={isTapped ? 'tab-icon-tapped' : ''}>
+                <span className={isTapped ? 'tab-pop' : ''}>
                   {tab.icon(active)}
                 </span>
                 <span className="text-[10px] font-black">{tab.label}</span>
