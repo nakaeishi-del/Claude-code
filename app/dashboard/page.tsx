@@ -9,8 +9,10 @@ import BearMascot from '@/components/BearMascot'
 interface User { id: string; name: string; email: string; priceRange: string; avatarUrl?: string | null }
 interface Group {
   id: string; name: string; description?: string | null; priceRange: string
-  members: { user: { id: string; name: string; email: string } }[]
-  latestProposal?: { id: string; status: string; proposedDate: string; restaurantName: string; votes: { vote: string }[] } | null
+  members: { user: { id: string; name: string; email: string; avatarUrl?: string | null } }[]
+  latestProposal?: { id: string; status: string; proposedDate: string; restaurantName: string; votes: { userId?: string }[] } | null
+  pendingVoteCount?: number
+  lastMessage?: { content: string; user: { name: string }; createdAt: string } | null
 }
 interface Activity {
   id: string; type: string; groupId: string; groupName: string; text: string; createdAt: string

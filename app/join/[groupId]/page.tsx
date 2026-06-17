@@ -100,7 +100,7 @@ export default function JoinGroupPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <span className="font-black text-2xl tracking-tight" style={{ color: '#F07050', letterSpacing: '-0.5px' }}>
-            lifematch
+            tomomeet
           </span>
         </div>
 
@@ -132,7 +132,7 @@ export default function JoinGroupPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                現在 {group.memberCount}人 / 最大4人
+                現在 {group.memberCount}人 / 最大8人
               </div>
 
               {error && (

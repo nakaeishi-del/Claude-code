@@ -53,7 +53,7 @@ function LoginContent() {
       <div className="flex flex-col items-center mb-8">
         <BearMascot size={88} mood={tab === 'login' ? 'happy' : 'wave'} animate />
         <h1 className="mt-3 text-3xl font-black tracking-tight" style={{ color: '#F07050', letterSpacing: '-0.5px' }}>
-          lifematch
+          tomomeet
         </h1>
         <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>
           友達との予定を、かんたんに。

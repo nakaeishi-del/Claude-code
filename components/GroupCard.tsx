@@ -100,7 +100,14 @@ export default function GroupCard({ group }: GroupCardProps) {
               </span>
             </div>
           )}
-          {proposal ? (
+          {members.length === 1 && !proposal ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full"
+                style={{ background: '#EEF3FC', color: '#4285F4' }}>
+                👥 友達を招待しよう！
+              </span>
+            </div>
+          ) : proposal ? (
             <div className="flex items-center justify-between">
               <div className="text-xs truncate flex-1 mr-2 font-bold" style={{ color: '#6B5B4E' }}>
                 {proposal.proposedDate.slice(5).replace('-', '/')} · {proposal.restaurantName}

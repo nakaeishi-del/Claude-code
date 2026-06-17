@@ -22,7 +22,7 @@ export default function Navbar({ userName, avatarUrl }: NavbarProps) {
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="font-black text-lg tracking-tight" style={{ color: '#F07050', letterSpacing: '-0.5px' }}>
-            lifematch
+            tomomeet
           </Link>
           <div className="hidden sm:flex items-center gap-4">
             <Link href="/dashboard" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
