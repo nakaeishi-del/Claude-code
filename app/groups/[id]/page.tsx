@@ -717,7 +717,7 @@ export default function GroupDetailPage() {
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
           onClick={() => setShowLeaveConfirm(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+          <div className="bounce-in bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-center mb-3">
               <BearMascot size={64} mood="thinking" animate />
             </div>
@@ -743,9 +743,9 @@ export default function GroupDetailPage() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
           onClick={() => setShowDeleteConfirm(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+          <div className="bounce-in bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-center mb-3">
-              <BearMascot size={64} mood="sleep" />
+              <BearMascot size={64} mood="sad" animate />
             </div>
             <h3 className="text-lg font-black mb-2" style={{ color: '#2D1B0E' }}>グループを削除しますか？</h3>
             <p className="text-sm font-bold mb-6" style={{ color: '#9B8B7E' }}>この操作は取り消せません。メンバー全員のデータが削除されます。</p>
