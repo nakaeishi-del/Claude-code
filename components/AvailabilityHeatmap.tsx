@@ -89,6 +89,9 @@ export default function AvailabilityHeatmap({ groupId, memberCount, onSelectDate
           const good = isGood(d.freeCount, d.busyCount, memberCount)
           const isSelected = selected === d.date
           const dayNum = parseInt(d.date.split('-')[2])
+          const todayStr = new Date().toISOString().split('T')[0]
+          const isToday = d.date === todayStr
+          const dayOfWeek = new Date(d.date + 'T00:00:00').getDay()
 
           return (
             <button
@@ -102,17 +105,18 @@ export default function AvailabilityHeatmap({ groupId, memberCount, onSelectDate
               title={`${d.date}（空き${d.freeCount}/${memberCount}人）`}
               className="aspect-square rounded-xl flex items-center justify-center text-xs font-black transition-all relative"
               style={{
-                background: color,
-                color: good ? '#166534' : '#C4B8AE',
-                border: isSelected ? '2px solid #F07050' : '2px solid transparent',
-                transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                background: isSelected ? '#F07050' : color,
+                color: isSelected ? 'white' : good ? '#166534' : dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#3B82F6' : '#C4B8AE',
+                border: isToday ? '2px solid #F07050' : isSelected ? '2px solid #F07050' : '2px solid transparent',
+                transform: isSelected ? 'scale(1.08)' : 'scale(1)',
                 cursor: good ? 'pointer' : 'default',
+                boxShadow: isSelected ? '0 2px 8px rgba(240,112,80,0.35)' : 'none',
               }}
             >
               {dayNum}
-              {good && (
+              {good && !isSelected && (
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white"
-                  style={{ background: '#F07050' }} />
+                  style={{ background: '#4ADE80' }} />
               )}
             </button>
           )
@@ -121,24 +125,29 @@ export default function AvailabilityHeatmap({ groupId, memberCount, onSelectDate
 
       {goodDays.length > 0 ? (
         <div className="mt-4 p-3 rounded-2xl" style={{ background: '#F0FAF2', border: '1px solid #BBF7D0' }}>
-          <p className="text-xs font-black mb-2" style={{ color: '#3B8A5A' }}>
-            🎉 みんな空いてる日 ({goodDays.length}日)
+          <p className="text-xs font-black mb-2 flex items-center gap-1.5" style={{ color: '#3B8A5A' }}>
+            <span>🎉</span>
+            <span>みんな空いてる日 ({goodDays.length}日)</span>
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {goodDays.slice(0, 6).map((d) => (
-              <button
-                key={d.date}
-                onClick={() => { setSelected(d.date); onSelectDate?.(d.date) }}
-                className="text-xs px-2.5 py-1 rounded-xl font-black transition-all"
-                style={{
-                  background: selected === d.date ? '#F07050' : 'white',
-                  color: selected === d.date ? 'white' : '#3B8A5A',
-                  border: `1.5px solid ${selected === d.date ? '#F07050' : '#86EFAC'}`,
-                }}
-              >
-                {d.date.slice(5).replace('-', '/')}（{DOW_LABELS[d.dayOfWeek]}）
-              </button>
-            ))}
+            {goodDays.slice(0, 6).map((d) => {
+              const isActive = selected === d.date
+              return (
+                <button
+                  key={d.date}
+                  onClick={() => { setSelected(d.date); onSelectDate?.(d.date) }}
+                  className="text-xs px-2.5 py-1 rounded-xl font-black transition-all active:scale-95"
+                  style={{
+                    background: isActive ? '#F07050' : 'white',
+                    color: isActive ? 'white' : '#3B8A5A',
+                    border: `1.5px solid ${isActive ? '#F07050' : '#86EFAC'}`,
+                    boxShadow: isActive ? '0 2px 6px rgba(240,112,80,0.3)' : 'none',
+                  }}
+                >
+                  {d.date.slice(5).replace('-', '/')}（{DOW_LABELS[d.dayOfWeek]}）
+                </button>
+              )
+            })}
           </div>
         </div>
       ) : (
