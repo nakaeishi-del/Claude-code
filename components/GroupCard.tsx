@@ -57,7 +57,7 @@ export default function GroupCard({ group }: GroupCardProps) {
 
   return (
     <Link href={`/groups/${group.id}`}>
-      <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer relative group"
+      <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-1 hover:shadow-md active:scale-[0.98] cursor-pointer relative group"
         style={{
           border: pendingVotes > 0 ? '1.5px solid #F5C4B0' : isConfirmed ? '1.5px solid #BBF7D0' : '1.5px solid #EDE8E3',
           boxShadow: pendingVotes > 0 ? '0 2px 16px rgba(240,112,80,0.12)' : isConfirmed ? '0 2px 16px rgba(91,175,122,0.10)' : '0 2px 12px rgba(0,0,0,0.04)',
@@ -77,7 +77,7 @@ export default function GroupCard({ group }: GroupCardProps) {
 
         {/* Pending vote badge */}
         {pendingVotes > 0 && (
-          <div className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1.5 rounded-full text-white text-[11px] font-black flex items-center justify-center"
+          <div className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1.5 rounded-full text-white text-[11px] font-black flex items-center justify-center gentle-pulse"
             style={{ background: '#F07050', boxShadow: '0 2px 6px rgba(240,112,80,0.4)' }}>
             {pendingVotes}
           </div>
