@@ -20,6 +20,7 @@ export default function JoinGroupPage() {
   const [group, setGroup] = useState<GroupInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
+  const [joined, setJoined] = useState(false)
   const [error, setError] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
@@ -76,7 +77,8 @@ export default function JoinGroupPage() {
     const res = await fetch(`/api/groups/${groupId}/join`, { method: 'POST' })
     const data = await res.json()
     if (res.ok) {
-      router.push(`/groups/${groupId}`)
+      setJoined(true)
+      setTimeout(() => router.push(`/groups/${groupId}`), 1800)
     } else {
       setError(data.error || 'エラーが発生しました')
       setJoining(false)
@@ -104,8 +106,14 @@ export default function JoinGroupPage() {
           </span>
         </div>
 
-        <div className="bg-white rounded-3xl p-8 text-center" style={{ border: '1.5px solid #EDE8E3', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-          {error ? (
+        <div className="bg-white rounded-3xl p-8 text-center page-enter" style={{ border: '1.5px solid #EDE8E3', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+          {joined ? (
+            <>
+              <BearMascot size={90} mood="celebrate" animate animationType="float" />
+              <h1 className="text-xl font-black mt-4 mb-1" style={{ color: '#2D1B0E' }}>参加しました！🎉</h1>
+              <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>グループページに移動します...</p>
+            </>
+          ) : error && !group ? (
             <>
               <BearMascot size={80} mood="sleep" />
               <h1 className="text-lg font-black mt-4 mb-2" style={{ color: '#2D1B0E' }}>グループが見つかりません</h1>
@@ -118,7 +126,7 @@ export default function JoinGroupPage() {
             </>
           ) : group ? (
             <>
-              <BearMascot size={80} mood="wave" />
+              <BearMascot size={80} mood="excited" animate animationType="bounce" />
               <div className="mt-4 mb-2">
                 <p className="text-xs font-bold" style={{ color: '#9B8B7E' }}>グループへの招待</p>
                 <h1 className="text-xl font-black mt-1" style={{ color: '#2D1B0E' }}>{group.name}</h1>
@@ -149,7 +157,7 @@ export default function JoinGroupPage() {
                     style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
                     ログインして参加する
                   </Link>
-                  <Link href={`/register?redirect=/join/${groupId}`}
+                  <Link href={`/?redirect=/join/${groupId}`}
                     className="block w-full py-3.5 rounded-2xl text-sm font-black"
                     style={{ border: '1.5px solid #EDE8E3', color: '#6B5B4E' }}>
                     新規登録して参加する
@@ -157,9 +165,14 @@ export default function JoinGroupPage() {
                 </div>
               ) : (
                 <button onClick={handleJoin} disabled={joining}
-                  className="w-full py-3.5 rounded-2xl text-white text-sm font-black disabled:opacity-60"
-                  style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
-                  {joining ? '参加中...' : 'グループに参加する 🎉'}
+                  className="w-full py-3.5 rounded-2xl text-white text-sm font-black transition-all active:scale-[0.98] disabled:opacity-60"
+                  style={{ background: 'linear-gradient(135deg, #F07050, #F09070)', boxShadow: '0 4px 16px rgba(240,112,80,0.30)' }}>
+                  {joining ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
+                      参加中...
+                    </span>
+                  ) : 'グループに参加する 🎉'}
                 </button>
               )}
             </>
