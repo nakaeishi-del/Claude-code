@@ -74,7 +74,7 @@ export default function DashboardPage() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
-      <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10">
+      <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10 page-enter">
         {/* Hero welcome card */}
         <div className="rounded-3xl px-6 py-8 mb-6 relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #F07050 0%, #F09070 60%, #F0B090 100%)' }}>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
               {groups.map((group) => <GroupCard key={group.id} group={group} />)}
             </div>
           )}

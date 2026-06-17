@@ -137,7 +137,7 @@ export default function EventsPage() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 pt-7 pb-24">
+      <main className="max-w-2xl mx-auto px-4 pt-7 pb-24 page-enter">
         <div className="mb-6">
           <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>イベントカレンダー</h1>
           <p className="text-sm mt-1 font-bold" style={{ color: '#9B8B7E' }}>行きたいイベントに♡して友達を誘おう</p>

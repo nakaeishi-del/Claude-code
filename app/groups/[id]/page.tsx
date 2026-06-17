@@ -8,6 +8,7 @@ import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import GroupChat from '@/components/GroupChat'
 import BearMascot from '@/components/BearMascot'
 import Avatar from '@/components/Avatar'
+import Confetti from '@/components/Confetti'
 import Link from 'next/link'
 
 interface Member {
@@ -104,6 +105,7 @@ export default function GroupDetailPage() {
   const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSuggestion[]>([])
   const [showRestaurantPicker, setShowRestaurantPicker] = useState(false)
   const [likedEvents, setLikedEvents] = useState<LikedEvent[]>([])
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/groups/${groupId}`)])
@@ -173,7 +175,14 @@ export default function GroupDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vote }),
     })
-    if (res.ok) await fetchData()
+    if (res.ok) {
+      const data = await res.json()
+      if (data.proposal?.status === 'confirmed') {
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 3000)
+      }
+      await fetchData()
+    }
     setVotingId(null)
   }
 
@@ -260,9 +269,10 @@ export default function GroupDetailPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+      <Confetti trigger={showConfetti} />
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 pt-6 pb-24 sm:pb-10">
+      <main className="max-w-2xl mx-auto px-4 pt-6 pb-24 sm:pb-10 page-enter">
         {/* Back */}
         <button onClick={() => router.push('/dashboard')}
           className="flex items-center gap-1.5 text-sm font-bold mb-6 transition-colors"

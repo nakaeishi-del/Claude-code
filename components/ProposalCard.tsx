@@ -1,5 +1,7 @@
 'use client'
 
+import BearMascot from './BearMascot'
+
 interface Vote {
   id: string
   userId: string
@@ -89,9 +91,15 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
     <div className="bg-white rounded-2xl p-5" style={{ border: `1.5px solid ${borderColor}` }}>
       {proposal.status === 'confirmed' && (
         <>
-          <div className="mb-4 px-4 py-3 rounded-2xl text-sm font-black text-center"
-            style={{ background: '#F0FAF2', border: '1px solid #BBF7D0', color: '#3B8A5A' }}>
-            🎉 全員参加確定！楽しんできてね
+          <div className="mb-4 rounded-2xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #F0FAF2, #E8F7EC)', border: '1.5px solid #BBF7D0' }}>
+            <div className="flex items-center gap-3 px-4 py-3">
+              <BearMascot size={44} mood="celebrate" animate animationType="float" />
+              <div>
+                <p className="font-black text-sm" style={{ color: '#3B8A5A' }}>全員参加確定！</p>
+                <p className="text-xs font-bold" style={{ color: '#5BAF7A' }}>楽しんできてね 🎉</p>
+              </div>
+            </div>
           </div>
           <SharePlanButton
             date={proposal.proposedDate}
