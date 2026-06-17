@@ -49,10 +49,21 @@ export default function GroupCard({ group }: GroupCardProps) {
     ? { color: '#5BAF7A', background: '#F0FAF2' }
     : { color: '#F07050', background: '#FFF0EC' }
 
+  const isConfirmed = proposal?.status === 'confirmed'
+
   return (
     <Link href={`/groups/${group.id}`}>
       <div className="bg-white rounded-2xl p-5 transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer relative group"
-        style={{ border: pendingVotes > 0 ? '1.5px solid #F5C4B0' : '1.5px solid #EDE8E3', boxShadow: pendingVotes > 0 ? '0 2px 16px rgba(240,112,80,0.12)' : '0 2px 12px rgba(0,0,0,0.04)' }}>
+        style={{
+          border: pendingVotes > 0 ? '1.5px solid #F5C4B0' : isConfirmed ? '1.5px solid #BBF7D0' : '1.5px solid #EDE8E3',
+          boxShadow: pendingVotes > 0 ? '0 2px 16px rgba(240,112,80,0.12)' : isConfirmed ? '0 2px 16px rgba(91,175,122,0.10)' : '0 2px 12px rgba(0,0,0,0.04)',
+        }}>
+
+        {/* Top accent stripe */}
+        {(pendingVotes > 0 || isConfirmed) && (
+          <div className="absolute top-0 left-4 right-4 h-0.5 rounded-full"
+            style={{ background: pendingVotes > 0 ? '#F07050' : '#5BAF7A' }} />
+        )}
 
         {/* Pending vote badge */}
         {pendingVotes > 0 && (
