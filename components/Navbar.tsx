@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Avatar from './Avatar'
 
@@ -9,8 +9,15 @@ interface NavbarProps {
   avatarUrl?: string | null
 }
 
+const NAV_LINKS = [
+  { href: '/dashboard', label: 'ホーム' },
+  { href: '/events', label: 'イベント' },
+  { href: '/settings', label: '設定' },
+]
+
 export default function Navbar({ userName, avatarUrl }: NavbarProps) {
   const router = useRouter()
+  const pathname = usePathname()
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -24,24 +31,29 @@ export default function Navbar({ userName, avatarUrl }: NavbarProps) {
           <Link href="/dashboard" className="font-black text-lg tracking-tight" style={{ color: '#F07050', letterSpacing: '-0.5px' }}>
             tomomeet
           </Link>
-          <div className="hidden sm:flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
-              ホーム
-            </Link>
-            <Link href="/events" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
-              イベント
-            </Link>
-            <Link href="/settings" className="text-sm font-bold transition-colors" style={{ color: '#9B8B7E' }}>
-              設定
-            </Link>
+          <div className="hidden sm:flex items-center gap-1">
+            {NAV_LINKS.map(({ href, label }) => {
+              const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
+              return (
+                <Link key={href} href={href}
+                  className="text-sm font-bold px-3 py-1.5 rounded-xl transition-colors"
+                  style={isActive
+                    ? { color: '#F07050', background: '#FFF0EC' }
+                    : { color: '#9B8B7E' }}>
+                  {label}
+                </Link>
+              )
+            })}
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {userName && (
-            <span className="text-sm font-bold hidden sm:block" style={{ color: '#C8B8A8' }}>
-              {userName}
-            </span>
+            <Link href="/settings" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl transition-colors"
+              style={{ color: '#C8B8A8' }}>
+              <Avatar name={userName} avatarUrl={avatarUrl} size={24} />
+              <span className="text-sm font-bold">{userName}</span>
+            </Link>
           )}
           <button
             onClick={handleLogout}
@@ -51,9 +63,9 @@ export default function Navbar({ userName, avatarUrl }: NavbarProps) {
             ログアウト
           </button>
           {userName && (
-            <div className="sm:hidden">
+            <Link href="/settings" className="sm:hidden">
               <Avatar name={userName} avatarUrl={avatarUrl} size={32} />
-            </div>
+            </Link>
           )}
         </div>
       </div>
