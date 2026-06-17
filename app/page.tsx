@@ -11,6 +11,7 @@ function LoginContent() {
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/dashboard'
   const [tab, setTab] = useState<'login' | 'register'>('login')
+  const [tabKey, setTabKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [loginData, setLoginData] = useState({ email: '', password: '' })
@@ -138,7 +139,7 @@ function LoginContent() {
         {/* Tabs */}
         <div className="flex bg-gray-100 rounded-2xl p-1 mb-6">
           {(['login', 'register'] as const).map((t) => (
-            <button key={t} onClick={() => { setTab(t); setError('') }}
+            <button key={t} onClick={() => { setTab(t); setTabKey((k) => k + 1); setError('') }}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
               style={tab === t
                 ? { background: 'white', color: '#2D1B0E', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }
@@ -156,7 +157,7 @@ function LoginContent() {
         )}
 
         {tab === 'login' ? (
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form key={tabKey} onSubmit={handleLogin} className="space-y-4 login-card-enter">
             <Field label="メールアドレス" type="email" placeholder="hello@example.com"
               value={loginData.email}
               onChange={(v) => setLoginData({ ...loginData, email: v })}
@@ -173,7 +174,7 @@ function LoginContent() {
             </p>
           </form>
         ) : (
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form key={tabKey} onSubmit={handleRegister} className="space-y-4 login-card-enter">
             <Field label="ニックネーム" type="text" placeholder="田中 さくら"
               value={registerData.name}
               onChange={(v) => setRegisterData({ ...registerData, name: v })}

@@ -331,10 +331,12 @@ export default function EventsPage() {
           <div className="relative bg-white w-full max-w-2xl rounded-t-3xl p-6 pb-10"
             style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}>
             {inviteSent ? (
-              <div className="py-8 text-center">
-                <div className="text-4xl mb-3">🎉</div>
-                <div className="font-black" style={{ color: '#2D1B0E' }}>グループに提案しました！</div>
-                <div className="text-sm font-bold mt-1" style={{ color: '#9B8B7E' }}>グループページに移動します</div>
+              <div className="py-8 text-center flex flex-col items-center gap-3">
+                <BearMascot size={80} mood="celebrate" animate animationType="float" />
+                <div>
+                  <div className="font-black text-lg" style={{ color: '#2D1B0E' }}>グループに提案しました！🎉</div>
+                  <div className="text-sm font-bold mt-1" style={{ color: '#9B8B7E' }}>グループページに移動します</div>
+                </div>
               </div>
             ) : (
               <>
@@ -361,17 +363,23 @@ export default function EventsPage() {
                   <div className="space-y-2">
                     {groups.map((group) => (
                       <button key={group.id} onClick={() => inviteGroup(group.id)} disabled={inviting}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all"
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all active:scale-[0.98] disabled:opacity-60"
                         style={{ border: '1.5px solid #EDE8E3' }}>
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-base font-black text-white flex-shrink-0"
                           style={{ background: '#F07050' }}>
                           {group.name[0]}
                         </div>
-                        <span className="text-sm font-black" style={{ color: '#2D1B0E' }}>{group.name}</span>
-                        <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                          style={{ color: '#C8B8A8' }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <span className="text-sm font-black flex-1" style={{ color: '#2D1B0E' }}>{group.name}</span>
+                        {inviting ? (
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" style={{ color: '#C8B8A8' }}>
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C8B8A8' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
                       </button>
                     ))}
                   </div>
