@@ -180,7 +180,8 @@ export default function DashboardPage() {
               { label: '投票待ち', value: totalPendingVotes, icon: '🗳️', color: '#C8A020', bg: '#FFFBEB' },
               { label: '確定予定', value: confirmedProposals.length, icon: '✅', color: '#5BAF7A', bg: '#F0FAF2' },
             ].map(({ label, value, icon, color, bg }) => (
-              <div key={label} className="rounded-2xl py-3 px-2 text-center" style={{ background: bg }}>
+              <div key={label} className="rounded-2xl py-3 px-2 text-center transition-transform hover:scale-105 active:scale-95 cursor-default"
+                style={{ background: bg }}>
                 <div className="text-base mb-0.5">{icon}</div>
                 <div className="text-xl font-black" style={{ color }}><CountUp target={value} /></div>
                 <div className="text-[10px] font-bold" style={{ color }}>{label}</div>
@@ -193,7 +194,7 @@ export default function DashboardPage() {
         {confirmedProposals.length > 0 && (
           <section className="mb-6">
             <SLabel>今後の確定予定 🎉</SLabel>
-            <div className="mt-3 grid gap-3">
+            <div className="mt-3 grid gap-3 stagger-children">
               {confirmedProposals.map((p) => {
                 const days = daysUntil(p.proposedDate)
                 const isToday = days === 0

@@ -300,9 +300,9 @@ export default function GroupDetailPage() {
       <main className="max-w-2xl mx-auto px-4 pt-6 pb-24 sm:pb-10 page-enter">
         {/* Back */}
         <button onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-1.5 text-sm font-bold mb-6 transition-colors"
+          className="flex items-center gap-1.5 text-sm font-bold mb-6 transition-all hover:gap-2.5 group"
           style={{ color: '#9B8B7E' }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
           </svg>
           ダッシュボードへ
