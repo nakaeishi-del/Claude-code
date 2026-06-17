@@ -260,14 +260,27 @@ export default function DashboardPage() {
           )}
 
           {groups.length === 0 ? (
-            <div className="flex flex-col items-center py-14 rounded-3xl" style={{ background: '#FFFFFF', border: '1.5px dashed #EDE8E3' }}>
-              <BearMascot size={90} mood="wink" />
-              <p className="mt-3 font-bold" style={{ color: '#2D1B0E' }}>グループを作って始めよう</p>
-              <p className="mt-1 text-xs mb-5" style={{ color: '#9B8B7E' }}>友達を招待して空き時間を自動でマッチング</p>
+            <div className="flex flex-col items-center py-12 px-6 rounded-3xl text-center" style={{ background: '#FFFFFF', border: '1.5px dashed #EDE8E3' }}>
+              <BearMascot size={90} mood="wave" animate animationType="float" />
+              <p className="mt-4 text-lg font-black" style={{ color: '#2D1B0E' }}>グループを作って始めよう！</p>
+              <p className="mt-1.5 text-sm mb-6 font-bold" style={{ color: '#9B8B7E' }}>友達を招待して空き時間を自動でマッチング</p>
+              <div className="flex flex-col gap-2 w-full max-w-xs mb-6">
+                {[
+                  { num: 1, text: 'グループを作る' },
+                  { num: 2, text: '友達を招待する' },
+                  { num: 3, text: 'AIが最適な日程を提案' },
+                ].map(({ num, text }) => (
+                  <div key={num} className="flex items-center gap-3 text-sm font-bold" style={{ color: '#9B8B7E' }}>
+                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0"
+                      style={{ background: '#F07050' }}>{num}</span>
+                    {text}
+                  </div>
+                ))}
+              </div>
               <button onClick={() => setShowModal(true)}
-                className="text-white px-6 py-3 rounded-2xl text-sm font-bold"
-                style={{ background: '#F07050', boxShadow: '0 3px 12px rgba(240,112,80,0.25)' }}>
-                最初のグループを作る
+                className="text-white px-8 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-95"
+                style={{ background: '#F07050', boxShadow: '0 4px 16px rgba(240,112,80,0.30)' }}>
+                最初のグループを作る 🎉
               </button>
             </div>
           ) : (

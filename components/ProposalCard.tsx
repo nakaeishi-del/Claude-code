@@ -238,13 +238,13 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
                   key={v}
                   onClick={() => handleVoteClick(v)}
                   disabled={loading}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-black transition-colors ${isPopping ? 'vote-pop' : ''}`}
+                  className={`flex-1 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-[0.97] ${isPopping ? 'vote-pop' : ''}`}
                   style={isActive
                     ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}`, boxShadow: `0 3px 12px ${cfg.active.bg}44` }
                     : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3', opacity: loading ? 0.5 : 1 }
                   }
                 >
-                  <span className="mr-1">{cfg.icon}</span>{cfg.label}
+                  <span className="mr-1.5">{cfg.icon}</span>{cfg.label}
                 </button>
               )
             })}
