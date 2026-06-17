@@ -50,6 +50,20 @@ interface Group {
   proposals: Proposal[]
 }
 
+interface RestaurantSuggestion {
+  name: string
+  area: string
+  genre: string
+  priceRange: string
+  rating: number
+  description: string
+}
+
+interface LikedEvent {
+  event: { id: string; date: string; title: string; genre: string; venue: string; area: string }
+  likedBy: { id: string; name: string }[]
+}
+
 const avatarPalette = ['#F07050', '#7AC8A0', '#F0B050', '#A87FD0']
 
 const priceLabels: Record<string, string> = {
@@ -85,6 +99,9 @@ export default function GroupDetailPage() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [actioning, setActioning] = useState(false)
+  const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSuggestion[]>([])
+  const [showRestaurantPicker, setShowRestaurantPicker] = useState(false)
+  const [likedEvents, setLikedEvents] = useState<LikedEvent[]>([])
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/groups/${groupId}`)])
@@ -100,14 +117,43 @@ export default function GroupDetailPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  useEffect(() => {
+    if (!groupId) return
+    fetch(`/api/groups/${groupId}/liked-events`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setLikedEvents(d.events || []) })
+      .catch(() => {})
+  }, [groupId])
+
   async function handlePropose() {
     setProposing(true)
     setProposeError('')
-    const body = selectedDate ? JSON.stringify({ date: selectedDate }) : undefined
+    try {
+      const res = await fetch(`/api/groups/${groupId}/restaurant-suggestions`)
+      if (res.ok) {
+        const d = await res.json()
+        setRestaurantSuggestions(d.suggestions || [])
+        setShowRestaurantPicker(true)
+      } else {
+        await handleProposeWithRestaurant(null)
+      }
+    } catch {
+      await handleProposeWithRestaurant(null)
+    }
+    setProposing(false)
+  }
+
+  async function handleProposeWithRestaurant(restaurant: RestaurantSuggestion | null) {
+    setShowRestaurantPicker(false)
+    setProposing(true)
+    setProposeError('')
+    const body: Record<string, unknown> = {}
+    if (selectedDate) body.date = selectedDate
+    if (restaurant) body.restaurant = restaurant
     const res = await fetch(`/api/groups/${groupId}/proposals`, {
       method: 'POST',
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     })
     const data = await res.json()
     if (res.ok) {
@@ -409,6 +455,45 @@ export default function GroupDetailPage() {
           </div>
         )}
 
+        {/* Liked events by members */}
+        {likedEvents.length > 0 && (
+          <section className="mb-6">
+            <SLabel>みんなが気になっているイベント ♡</SLabel>
+            <div className="mt-3 space-y-2">
+              {likedEvents.map(({ event, likedBy }) => {
+                const genreEmoji: Record<string, string> = { music: '🎵', food: '🍜', sports: '⚽', art: '🎨', theater: '🎭', festival: '🎉' }
+                const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(event.venue + ' ' + event.area)}`
+                return (
+                  <div key={event.id} className="bg-white rounded-2xl p-4" style={{ border: '1.5px solid #EDE8E3' }}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#FFF5F2' }}>
+                        {genreEmoji[event.genre] || '🎪'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-black text-sm leading-snug" style={{ color: '#2D1B0E' }}>{event.title}</div>
+                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{event.date} · {event.venue}（{event.area}）</div>
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          {likedBy.map((u) => (
+                            <span key={u.id} className="text-[11px] px-2 py-0.5 rounded-full font-black"
+                              style={{ background: '#FFF0EC', color: '#F07050' }}>
+                              ♡ {u.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                        className="shrink-0 text-xs font-black px-3 py-2 rounded-xl"
+                        style={{ background: '#F5F0EB', color: '#6B5B4E' }}>
+                        地図
+                      </a>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Group chat */}
         <section>
           <SLabel>グループトーク</SLabel>
@@ -417,6 +502,48 @@ export default function GroupDetailPage() {
           </div>
         </section>
       </main>
+
+      {/* Restaurant picker modal */}
+      {showRestaurantPicker && (
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50"
+          onClick={() => { setShowRestaurantPicker(false); setProposing(false) }}>
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md"
+            style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.15)' }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ background: '#EDE8E3' }} />
+            </div>
+            <div className="p-6 pt-4">
+              <h3 className="text-lg font-black mb-1" style={{ color: '#2D1B0E' }}>お店を選んで提案する</h3>
+              <p className="text-xs font-bold mb-5" style={{ color: '#C8B8A8' }}>3つの候補から選ぼう。グループの価格帯に合わせて絞り込んでいます</p>
+              <div className="space-y-3">
+                {restaurantSuggestions.map((r, i) => (
+                  <button key={i} onClick={() => handleProposeWithRestaurant(r)}
+                    className="w-full text-left p-4 rounded-2xl transition-all active:scale-[0.98]"
+                    style={{ border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#FFF0EC' }}>
+                        🍽️
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-black text-sm" style={{ color: '#2D1B0E' }}>{r.name}</div>
+                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{r.area} · {r.genre}</div>
+                        <div className="text-xs mt-1 line-clamp-1" style={{ color: '#C8B8A8' }}>{r.description}</div>
+                      </div>
+                      <div className="text-xs font-black shrink-0" style={{ color: '#F0C050' }}>★ {r.rating}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => handleProposeWithRestaurant(null)}
+                className="w-full mt-3 py-3 rounded-2xl text-sm font-black"
+                style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3' }}>
+                ランダムで決める
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Leave confirm modal */}
       {showLeaveConfirm && (

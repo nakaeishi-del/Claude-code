@@ -70,6 +70,23 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Collect friend userIds (people sharing a group with current user)
+  let friendIds: Set<string> = new Set()
+  if (userId) {
+    const memberships = await prisma.groupMember.findMany({
+      where: { userId },
+      select: { groupId: true },
+    })
+    const groupIds = memberships.map((m) => m.groupId)
+    if (groupIds.length > 0) {
+      const friendMembers = await prisma.groupMember.findMany({
+        where: { groupId: { in: groupIds }, userId: { not: userId } },
+        select: { userId: true, user: { select: { name: true } } },
+      })
+      friendIds = new Set(friendMembers.map((m) => m.userId))
+    }
+  }
+
   const eventsWithLike = events.map((event) => ({
     id: event.id,
     date: event.date,
@@ -81,6 +98,7 @@ export async function GET(request: NextRequest) {
     url: event.url,
     liked: userId ? event.likes.some((l) => l.userId === userId) : false,
     likeCount: event.likes.length,
+    friendLikeCount: event.likes.filter((l) => friendIds.has(l.userId)).length,
   }))
 
   return NextResponse.json({ events: eventsWithLike })

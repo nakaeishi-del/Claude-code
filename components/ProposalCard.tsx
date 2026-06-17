@@ -89,6 +89,20 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
             </div>
             <div className="text-xs mt-1 font-black" style={{ color: '#F07050' }}>{proposal.estimatedCost}</div>
           </div>
+          <div className="flex flex-col gap-1.5 shrink-0">
+            <a href={`https://www.google.com/maps/search/${encodeURIComponent(proposal.restaurantName + ' ' + proposal.restaurantArea)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-[11px] font-black px-2.5 py-1.5 rounded-xl text-center"
+              style={{ background: '#EEF3FC', color: '#4285F4' }}>
+              地図
+            </a>
+            <a href={`https://tabelog.com/rstLst/?vs=1&sa=${encodeURIComponent(proposal.restaurantArea)}&keyword=${encodeURIComponent(proposal.restaurantName)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-[11px] font-black px-2.5 py-1.5 rounded-xl text-center"
+              style={{ background: '#FFF0EC', color: '#F07050' }}>
+              食べログ
+            </a>
+          </div>
         </div>
       </div>
 

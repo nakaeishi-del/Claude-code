@@ -63,7 +63,7 @@ export async function POST(
     }
 
     // Use manually selected date or auto-find
-    let body: { date?: string } = {}
+    let body: { date?: string; restaurant?: { name: string; area: string; genre: string; priceRange: string } } = {}
     try { body = await request.json() } catch { /* no body */ }
 
     let proposedDate: string
@@ -79,9 +79,14 @@ export async function POST(
 
     const proposedTime = '19:00'
 
-    // Get restaurant suggestion
-    const restaurants = getRestaurantSuggestions(group.priceRange, 1)
-    const restaurant = restaurants[0]
+    // Get restaurant suggestion (use provided or pick randomly)
+    let restaurant: { name: string; area: string; genre: string; priceRange: string } | null = null
+    if (body.restaurant && body.restaurant.name) {
+      restaurant = body.restaurant
+    } else {
+      const suggestions = getRestaurantSuggestions(group.priceRange, 1)
+      restaurant = suggestions[0] ?? null
+    }
 
     if (!restaurant) {
       return NextResponse.json({ error: 'レストランが見つかりませんでした' }, { status: 400 })
