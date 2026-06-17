@@ -476,13 +476,16 @@ export default function GroupDetailPage() {
         {/* Propose button */}
         <div className="mb-6">
           <button onClick={handlePropose} disabled={proposing}
-            className="w-full py-4 text-white rounded-2xl font-black text-base transition-opacity disabled:opacity-60"
-            style={{ background: '#F07050', boxShadow: '0 4px 16px rgba(240,112,80,0.28)' }}>
-            {proposing
-              ? '最適な日程を計算中...'
-              : selectedDate
-                ? `📅 ${selectedDate.slice(5).replace('-', '/')} で提案する`
-                : '✨ 自動で最適な日程を提案する'}
+            className="w-full py-4 text-white rounded-2xl font-black text-base transition-all active:scale-[0.98] disabled:opacity-70 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #F07050, #F09070)', boxShadow: '0 4px 20px rgba(240,112,80,0.35)' }}>
+            {proposing ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
+                最適な日程を計算中...
+              </span>
+            ) : selectedDate
+              ? `📅 ${selectedDate.slice(5).replace('-', '/')} で提案する`
+              : '✨ 自動で最適な日程を提案する'}
           </button>
           {proposeError && (
             <div className="mt-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-center"
@@ -630,46 +633,65 @@ export default function GroupDetailPage() {
 
       {/* Restaurant picker modal */}
       {showRestaurantPicker && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50"
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50 slide-up"
           onClick={() => { setShowRestaurantPicker(false); setProposing(false) }}>
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md"
             style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.15)' }}
             onClick={(e) => e.stopPropagation()}>
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: '#EDE8E3' }} />
+              <div className="w-10 h-1.5 rounded-full" style={{ background: '#EDE8E3' }} />
             </div>
-            <div className="p-6 pt-4">
-              <h3 className="text-lg font-black mb-1" style={{ color: '#2D1B0E' }}>お店を選んで提案する</h3>
-              <p className="text-xs font-bold mb-5" style={{ color: '#C8B8A8' }}>3つの候補から選ぼう。グループの価格帯に合わせて絞り込んでいます</p>
-              <div className="space-y-3">
-                {restaurantSuggestions.map((r, i) => (
-                  <button key={i} onClick={() => handleProposeWithRestaurant(r)}
-                    className="w-full text-left p-4 rounded-2xl transition-all active:scale-[0.98]"
-                    style={{ border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}>
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#FFF0EC' }}>
-                        🍽️
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <div className="font-black text-sm" style={{ color: '#2D1B0E' }}>{r.name}</div>
-                          {r.sponsorTag && (
-                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                              style={{ background: '#FFF0EC', color: '#F07050' }}>{r.sponsorTag}</span>
-                          )}
+            <div className="p-6 pt-4 pb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <BearMascot size={40} mood="excited" animate animationType="bounce" />
+                <div>
+                  <h3 className="text-base font-black" style={{ color: '#2D1B0E' }}>お店を選んで提案する</h3>
+                  <p className="text-[11px] font-bold" style={{ color: '#C8B8A8' }}>グループの価格帯でおすすめを絞り込みました</p>
+                </div>
+              </div>
+              <div className="space-y-2.5 stagger-children">
+                {restaurantSuggestions.map((r, i) => {
+                  const genreEmoji: Record<string, string> = { 居酒屋: '🍺', カフェ: '☕', ラーメン: '🍜', 焼肉: '🥩', 寿司: '🍱', イタリアン: '🍝', 和食: '🍱', 中華: '🥡' }
+                  const emoji = Object.entries(genreEmoji).find(([k]) => r.genre.includes(k))?.[1] ?? '🍽️'
+                  return (
+                    <button key={i} onClick={() => handleProposeWithRestaurant(r)}
+                      className="w-full text-left p-4 rounded-2xl transition-all active:scale-[0.98] hover:border-orange-200"
+                      style={{ border: '1.5px solid #EDE8E3', background: r.featured ? 'linear-gradient(135deg, #FFFDF9, #FFF5F0)' : '#FAFAF8' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                          style={{ background: r.featured ? '#FFF0EC' : '#F5F0EB' }}>
+                          {emoji}
                         </div>
-                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{r.area} · {r.genre}</div>
-                        <div className="text-xs mt-1 line-clamp-1" style={{ color: '#C8B8A8' }}>{r.description}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="font-black text-sm" style={{ color: '#2D1B0E' }}>{r.name}</div>
+                            {r.featured && (
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                                style={{ background: '#F07050', color: 'white' }}>おすすめ</span>
+                            )}
+                            {r.sponsorTag && (
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                                style={{ background: '#FFF0EC', color: '#F07050' }}>{r.sponsorTag}</span>
+                            )}
+                          </div>
+                          <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{r.area} · {r.genre}</div>
+                          <div className="text-xs mt-1 line-clamp-1" style={{ color: '#C8B8A8' }}>{r.description}</div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <div className="text-xs font-black" style={{ color: '#F0C050' }}>★ {r.rating}</div>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C8B8A8' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
                       </div>
-                      <div className="text-xs font-black shrink-0" style={{ color: '#F0C050' }}>★ {r.rating}</div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  )
+                })}
               </div>
               <button onClick={() => handleProposeWithRestaurant(null)}
-                className="w-full mt-3 py-3 rounded-2xl text-sm font-black"
-                style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3' }}>
-                ランダムで決める
+                className="w-full mt-3 py-3 rounded-2xl text-sm font-black transition-all active:scale-[0.98]"
+                style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}>
+                🎲 ランダムで決める
               </button>
             </div>
           </div>

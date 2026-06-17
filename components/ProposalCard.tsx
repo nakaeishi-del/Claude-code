@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import BearMascot from './BearMascot'
 import ShareCard from './ShareCard'
 
@@ -73,7 +74,14 @@ function SharePlanButton({ date, restaurant, area }: { date: string; restaurant:
 }
 
 export default function ProposalCard({ proposal, currentUserId, memberCount, myRole, onVote, onCancel, loading }: ProposalCardProps) {
+  const [poppingVote, setPoppingVote] = useState<string | null>(null)
   const myVote = proposal.votes.find((v) => v.userId === currentUserId)
+
+  function handleVoteClick(v: 'accept' | 'decline' | 'maybe') {
+    setPoppingVote(v)
+    setTimeout(() => setPoppingVote(null), 380)
+    onVote(proposal.id, v)
+  }
   const acceptCount = proposal.votes.filter((v) => v.vote === 'accept').length
   const declineCount = proposal.votes.filter((v) => v.vote === 'decline').length
   const maybeCount = proposal.votes.filter((v) => v.vote === 'maybe').length
@@ -183,14 +191,15 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
             {(['accept', 'maybe', 'decline'] as const).map((v) => {
               const cfg = voteConfig[v]
               const isActive = myVote?.vote === v
+              const isPopping = poppingVote === v
               return (
                 <button
                   key={v}
-                  onClick={() => onVote(proposal.id, v)}
+                  onClick={() => handleVoteClick(v)}
                   disabled={loading}
-                  className="flex-1 py-3.5 rounded-2xl text-sm font-black transition-all active:scale-95"
+                  className={`flex-1 py-3.5 rounded-2xl text-sm font-black transition-colors ${isPopping ? 'vote-pop' : ''}`}
                   style={isActive
-                    ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}` }
+                    ? { background: cfg.active.bg, color: cfg.active.color, border: `1.5px solid ${cfg.active.bg}`, boxShadow: `0 3px 12px ${cfg.active.bg}44` }
                     : { background: '#FAFAF8', color: '#6B5B4E', border: '1.5px solid #EDE8E3', opacity: loading ? 0.5 : 1 }
                   }
                 >
