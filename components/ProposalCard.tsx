@@ -210,6 +210,22 @@ export default function ProposalCard({ proposal, currentUserId, memberCount, myR
         </div>
       )}
 
+      {proposal.status === 'pending' && (() => {
+        const remaining = memberCount - acceptCount - declineCount - maybeCount
+        const isClose = remaining === 1 && declineCount === 0
+        const allVoted = remaining === 0
+        return isClose || allVoted ? (
+          <div className="mb-3 px-3 py-2 rounded-2xl text-xs font-black text-center"
+            style={{
+              background: isClose ? '#FFF8E1' : allVoted && declineCount === 0 ? '#F0FAF2' : '#FFF0EC',
+              color: isClose ? '#C8A020' : allVoted && declineCount === 0 ? '#3B8A5A' : '#F07050',
+              border: `1px solid ${isClose ? '#FDE68A' : allVoted && declineCount === 0 ? '#BBF7D0' : '#F5C4B0'}`,
+            }}>
+            {isClose ? '🔥 あと1人！' : allVoted && declineCount === 0 ? '✅ 全員投票完了！' : '📊 全員投票済み'}
+          </div>
+        ) : null
+      })()}
+
       {proposal.status === 'pending' && (
         <>
           <div className="flex gap-2">

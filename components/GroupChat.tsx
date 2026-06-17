@@ -150,7 +150,17 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
       {/* Messages */}
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 max-h-72 pr-1">
         {loading ? (
-          <div className="text-center py-6 text-xs font-bold" style={{ color: '#C8B8A8' }}>よみこみ中...</div>
+          <div className="space-y-3 py-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={`flex gap-2 ${i % 2 === 0 ? 'flex-row-reverse' : 'flex-row'}`}>
+                {i % 2 !== 0 && <div className="w-7 h-7 rounded-full shimmer flex-shrink-0 mt-0.5" />}
+                <div className="flex flex-col gap-1" style={{ maxWidth: '65%' }}>
+                  {i % 2 !== 0 && <div className="h-2.5 w-12 rounded-full shimmer" />}
+                  <div className="h-9 rounded-2xl shimmer" style={{ width: `${60 + i * 20}px` }} />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : messages.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-2xl mb-2">💬</div>
