@@ -76,6 +76,14 @@ export default function DashboardPage() {
     return Math.round((target.getTime() - today.getTime()) / 86400000)
   }
 
+  function getGreeting(): string {
+    const hour = new Date().getHours()
+    if (hour < 5) return 'こんばんは'
+    if (hour < 10) return 'おはよう'
+    if (hour < 17) return 'こんにちは'
+    return 'こんばんは'
+  }
+
   function relativeTime(iso: string): string {
     const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
     if (diff < 60) return 'たった今'
@@ -135,7 +143,7 @@ export default function DashboardPage() {
             <div className="flex-1 min-w-0">
               <p className="text-white/70 text-xs font-black uppercase tracking-widest mb-0.5">tomomeet</p>
               <h1 className="text-xl font-black text-white leading-tight">
-                おかえり、{user?.name} 👋
+                {getGreeting()}、{user?.name} 👋
               </h1>
               {totalPendingVotes > 0 ? (
                 <div className="mt-2 inline-flex items-center gap-1.5 bg-white/25 px-3 py-1.5 rounded-2xl">

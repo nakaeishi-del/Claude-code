@@ -6,13 +6,13 @@ import Navbar from '@/components/Navbar'
 import BearMascot from '@/components/BearMascot'
 
 const GENRES = [
-  { value: 'all',      label: '全て' },
-  { value: 'music',    label: '音楽' },
-  { value: 'food',     label: 'グルメ' },
-  { value: 'sports',   label: 'スポーツ' },
-  { value: 'art',      label: 'アート' },
-  { value: 'theater',  label: '演劇' },
-  { value: 'festival', label: 'フェス' },
+  { value: 'all',      label: '全て',      emoji: '✨' },
+  { value: 'music',    label: '音楽',      emoji: '🎵' },
+  { value: 'food',     label: 'グルメ',    emoji: '🍜' },
+  { value: 'sports',   label: 'スポーツ',  emoji: '⚽' },
+  { value: 'art',      label: 'アート',    emoji: '🎨' },
+  { value: 'theater',  label: '演劇',      emoji: '🎭' },
+  { value: 'festival', label: 'フェス',    emoji: '🎉' },
 ]
 
 const genreEmoji: Record<string, string> = {
@@ -176,10 +176,11 @@ export default function EventsPage() {
         <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           {GENRES.map((g) => (
             <button key={g.value} onClick={() => setActiveGenre(g.value)}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-black transition-all"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-black transition-all active:scale-95"
               style={activeGenre === g.value
                 ? { background: '#F07050', color: 'white' }
                 : { background: 'white', color: '#9B8B7E', border: '1.5px solid #EDE8E3' }}>
+              <span className="text-base leading-none">{g.emoji}</span>
               {g.label}
             </button>
           ))}
