@@ -192,10 +192,26 @@ function SettingsContent() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
-      <main className="max-w-2xl mx-auto px-4 pt-7 pb-28 sm:pb-10 space-y-5 page-enter">
-        <div className="mb-2">
-          <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>設定</h1>
-          <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>プロフィールと空き時間を設定しよう</p>
+      <main className="max-w-2xl mx-auto px-4 pt-0 pb-28 sm:pb-10 space-y-5 page-enter">
+        {/* Profile banner */}
+        <div className="rounded-3xl px-6 py-5 flex items-center gap-4"
+          style={{ background: 'linear-gradient(135deg, #F07050 0%, #F09070 60%, #F0B090 100%)' }}>
+          <div className="relative flex-shrink-0">
+            <Avatar name={editName || 'U'} avatarUrl={avatarUrl} size={64}
+              className="ring-4 ring-white/40" />
+            <button type="button" onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs"
+              style={{ background: '#F07050', border: '2px solid white' }}>
+              ✎
+            </button>
+          </div>
+          <div>
+            <p className="font-black text-white text-lg leading-tight">{editName || user?.name}</p>
+            <p className="text-white/70 text-xs font-bold mt-0.5">{user?.email}</p>
+            <p className="text-white/80 text-xs font-black mt-1">
+              {achievements.filter((a) => a.unlocked).length}個の実績 · {achievements.length}個中
+            </p>
+          </div>
         </div>
 
         {/* Profile completion bar */}
@@ -312,21 +328,34 @@ function SettingsContent() {
         </Card>
 
         <Card>
-          <SLabel>実績バッジ</SLabel>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="flex items-center justify-between">
+            <SLabel>実績バッジ</SLabel>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full"
+              style={{ background: '#FFF0EC', color: '#F07050' }}>
+              {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+            </span>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2.5">
             {achievements.map((a) => (
               <div
                 key={a.id}
-                className="rounded-2xl p-3"
+                className="rounded-2xl p-3 text-center relative"
                 style={{
-                  background: a.unlocked ? '#FFFFFF' : '#FAFAF8',
-                  border: a.unlocked ? '1.5px solid #EDE8E3' : '1.5px dashed #EDE8E3',
-                  opacity: a.unlocked ? 1 : 0.4,
+                  background: a.unlocked
+                    ? 'linear-gradient(135deg, #FFFDF9, #FFF8F0)'
+                    : '#FAFAF8',
+                  border: a.unlocked ? '1.5px solid #F5C4B0' : '1.5px dashed #EDE8E3',
+                  opacity: a.unlocked ? 1 : 0.45,
+                  boxShadow: a.unlocked ? '0 2px 8px rgba(240,112,80,0.12)' : 'none',
                 }}
               >
-                <div className="text-2xl">{a.icon}</div>
-                <p className="text-xs font-black mt-1" style={{ color: a.unlocked ? '#2D1B0E' : '#9B8B7E' }}>{a.label}</p>
-                <p className="text-[10px] font-bold mt-0.5" style={{ color: '#C8B8A8' }}>{a.desc}</p>
+                {a.unlocked && (
+                  <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white"
+                    style={{ background: '#F07050' }}>✓</div>
+                )}
+                <div className="text-3xl mb-1.5 leading-none">{a.icon}</div>
+                <p className="text-[11px] font-black leading-tight" style={{ color: a.unlocked ? '#2D1B0E' : '#9B8B7E' }}>{a.label}</p>
+                <p className="text-[9px] font-bold mt-0.5 leading-tight" style={{ color: '#C8B8A8' }}>{a.desc}</p>
               </div>
             ))}
           </div>
