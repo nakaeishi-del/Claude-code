@@ -1,7 +1,17 @@
 'use client'
 
-const DAYS = ['月', '火', '水', '木', '金', '土', '日']
-const DAY_OF_WEEK = [1, 2, 3, 4, 5, 6, 0]
+const WEEKDAYS = [
+  { label: '月', dow: 1 },
+  { label: '火', dow: 2 },
+  { label: '水', dow: 3 },
+  { label: '木', dow: 4 },
+  { label: '金', dow: 5 },
+]
+
+const WEEKEND = [
+  { label: '土', dow: 6 },
+  { label: '日', dow: 0 },
+]
 
 interface AvailabilityEntry {
   dayOfWeek?: number | null
@@ -14,6 +24,69 @@ interface AvailabilityGridProps {
   onChange: (newAvailability: AvailabilityEntry[]) => void
 }
 
+function getDayLabelColor(dow: number, type: 'free' | 'busy' | null): string {
+  if (type !== null) return '#FFFFFF'
+  if (dow === 0) return '#EF4444'
+  if (dow === 6) return '#3B82F6'
+  return '#9B8B7E'
+}
+
+function DayCard({
+  label,
+  dow,
+  type,
+  onToggle,
+}: {
+  label: string
+  dow: number
+  type: 'free' | 'busy' | null
+  onToggle: () => void
+}) {
+  const bg = type === 'free' ? '#7AC8A0' : type === 'busy' ? '#F07050' : '#FAFAF8'
+  const border = type === 'free' ? '#7AC8A0' : type === 'busy' ? '#F07050' : '#EDE8E3'
+  const labelColor = getDayLabelColor(dow, type)
+  const statusColor = type !== null ? '#FFFFFF' : '#C8B8A8'
+
+  const icon = type === 'free' ? '✓' : type === 'busy' ? '✕' : '?'
+  const statusLabel = type === 'free' ? '空き' : type === 'busy' ? 'NG' : '未設定'
+
+  return (
+    <button
+      onClick={onToggle}
+      className="flex flex-col items-center justify-between rounded-2xl transition-all active:scale-95 select-none"
+      style={{
+        background: bg,
+        border: `1.5px solid ${border}`,
+        padding: '10px 6px 8px',
+        minHeight: '80px',
+        width: '100%',
+      }}
+      title={`${label}曜日: タップして切り替え`}
+    >
+      {/* Day name */}
+      <span className="text-sm font-black leading-none" style={{ color: labelColor }}>
+        {label}
+      </span>
+
+      {/* State icon */}
+      <span
+        className="text-xl font-black leading-none"
+        style={{ color: type !== null ? '#FFFFFF' : '#C8B8A8' }}
+      >
+        {icon}
+      </span>
+
+      {/* Status label */}
+      <span
+        className="text-xs font-black leading-none"
+        style={{ color: statusColor }}
+      >
+        {statusLabel}
+      </span>
+    </button>
+  )
+}
+
 export default function AvailabilityGrid({ availability, onChange }: AvailabilityGridProps) {
   function getTypeForDay(dow: number): 'free' | 'busy' | null {
     const entry = availability.find((a) => a.dayOfWeek === dow && a.date == null)
@@ -22,6 +95,7 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
 
   function toggleDay(dow: number) {
     const current = getTypeForDay(dow)
+    // 3-state cycle: null → free → busy → null
     const next = current === null ? 'free' : current === 'free' ? 'busy' : null
     const filtered = availability.filter((a) => !(a.dayOfWeek === dow && a.date == null))
     if (next !== null) {
@@ -31,16 +105,31 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
     }
   }
 
+  function setAll(type: 'free' | 'busy') {
+    const allDows = [...WEEKDAYS, ...WEEKEND].map((d) => d.dow)
+    const dateOnly = availability.filter((a) => a.date != null)
+    const dowEntries = allDows.map((dow) => ({ dayOfWeek: dow, date: null, type }))
+    onChange([...dateOnly, ...dowEntries])
+  }
+
+  function setWeekdaysOnly() {
+    const dateOnly = availability.filter((a) => a.date != null)
+    const weekdayEntries = WEEKDAYS.map((d) => ({ dayOfWeek: d.dow, date: null, type: 'free' }))
+    const weekendEntries = WEEKEND.map((d) => ({ dayOfWeek: d.dow, date: null, type: 'busy' }))
+    onChange([...dateOnly, ...weekdayEntries, ...weekendEntries])
+  }
+
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-3 text-xs" style={{ color: '#B8A898' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Legend */}
+      <div className="flex items-center gap-4 text-xs" style={{ color: '#B8A898' }}>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-md inline-block" style={{ background: '#7AC8A0' }} />
           いつも空き
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-md inline-block" style={{ background: '#F07050' }} />
-          予定あり
+          基本NG
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-md inline-block" style={{ background: '#EDE8E3' }} />
@@ -48,39 +137,64 @@ export default function AvailabilityGrid({ availability, onChange }: Availabilit
         </span>
       </div>
 
-      <div className="grid grid-cols-7 gap-1.5">
-        {DAYS.map((day, i) => {
-          const dow = DAY_OF_WEEK[i]
-          const type = getTypeForDay(dow)
-          const isWeekend = dow === 0 || dow === 6
-
-          const bg = type === 'free' ? '#7AC8A0' : type === 'busy' ? '#F07050' : '#FAFAF8'
-          const color = type !== null ? '#FFFFFF' : isWeekend ? (dow === 0 ? '#EF4444' : '#3B82F6') : '#9B8B7E'
-          const border = type === 'free' ? '#7AC8A0' : type === 'busy' ? '#F07050' : '#EDE8E3'
-
-          return (
-            <div key={day} className="flex flex-col gap-1.5">
-              <div className="text-center text-xs font-black pb-0.5" style={{ color }}>
-                {day}
-              </div>
-              <button
-                onClick={() => toggleDay(dow)}
-                className="w-full min-h-[52px] rounded-2xl flex items-center justify-center transition-all active:scale-95"
-                style={{ background: bg, border: `1.5px solid ${border}` }}
-                title={`${day}曜日: タップして切り替え`}
-              >
-                <span className="text-xs font-black" style={{ color: type !== null ? '#fff' : '#9B8B7E' }}>
-                  {type === 'free' ? '空き' : type === 'busy' ? '予定' : '―'}
-                </span>
-              </button>
-            </div>
-          )
-        })}
+      {/* Weekday row: 月火水木金 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+        {WEEKDAYS.map(({ label, dow }) => (
+          <DayCard
+            key={dow}
+            label={label}
+            dow={dow}
+            type={getTypeForDay(dow)}
+            onToggle={() => toggleDay(dow)}
+          />
+        ))}
       </div>
 
-      <p className="mt-3 text-xs font-bold" style={{ color: '#C8B8A8' }}>
-        タップして切り替え（空き → 予定あり → 未設定）
+      {/* Weekend row: 土日 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+        {WEEKEND.map(({ label, dow }) => (
+          <DayCard
+            key={dow}
+            label={label}
+            dow={dow}
+            type={getTypeForDay(dow)}
+            onToggle={() => toggleDay(dow)}
+          />
+        ))}
+      </div>
+
+      {/* Hint text */}
+      <p className="text-xs font-bold" style={{ color: '#C8B8A8', marginTop: '2px' }}>
+        タップ: 🟢 空き → 🔴 NG → ⬜ 未設定
       </p>
+
+      {/* Quick-set buttons */}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <button
+          onClick={() => setAll('free')}
+          className="flex-1 rounded-2xl font-black text-sm transition-all active:scale-95"
+          style={{
+            background: '#7AC8A0',
+            color: '#FFFFFF',
+            padding: '10px 0',
+            border: 'none',
+          }}
+        >
+          全部空き
+        </button>
+        <button
+          onClick={setWeekdaysOnly}
+          className="flex-1 rounded-2xl font-black text-sm transition-all active:scale-95"
+          style={{
+            background: '#FAFAF8',
+            color: '#9B8B7E',
+            padding: '10px 0',
+            border: '1.5px solid #EDE8E3',
+          }}
+        >
+          平日のみ
+        </button>
+      </div>
     </div>
   )
 }
