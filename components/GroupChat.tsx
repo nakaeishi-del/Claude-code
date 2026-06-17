@@ -16,6 +16,7 @@ interface Props {
 }
 
 const avatarPalette = ['#F07050', '#7AC8A0', '#F0B050', '#A87FD0', '#6B8FD4', '#E06090']
+const QUICK_EMOJIS = ['👍', '🎉', '😆', '🙏', '❤️', '🍽️', '📅']
 
 function getColor(userId: string) {
   let hash = 0
@@ -38,6 +39,7 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
   const [loading, setLoading] = useState(true)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [newIds, setNewIds] = useState<Set<string>>(new Set())
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const lastIdRef = useRef<string | null>(null)
@@ -62,6 +64,12 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
             : incoming
           if (newOnes.length === 0) return prev
           lastIdRef.current = incoming[incoming.length - 1]?.id ?? lastKnown
+          setNewIds((ids) => {
+            const next = new Set(ids)
+            newOnes.forEach((m) => next.add(m.id))
+            return next
+          })
+          setTimeout(() => setNewIds(new Set()), 800)
           return [...prev, ...newOnes]
         })
       }
@@ -86,39 +94,65 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
     isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60
   }
 
-  async function handleSend(e: React.FormEvent) {
-    e.preventDefault()
-    const content = input.trim()
+  async function handleSend(e?: React.FormEvent, quickText?: string) {
+    e?.preventDefault()
+    const content = (quickText ?? input).trim()
     if (!content || sending) return
     setSending(true)
-    setInput('')
+    if (!quickText) setInput('')
     const res = await fetch(`/api/groups/${groupId}/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
     })
     const data = await res.json()
-    if (res.ok) setMessages((prev) => [...prev, data.message])
+    if (res.ok) {
+      setMessages((prev) => [...prev, data.message])
+      isAtBottomRef.current = true
+    }
     setSending(false)
   }
 
   return (
     <div className="flex flex-col" style={{ minHeight: 0 }}>
+      <style>{`
+        @keyframes msgSlideRight {
+          from { opacity: 0; transform: translateX(16px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes msgSlideLeft {
+          from { opacity: 0; transform: translateX(-16px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes emojiPop {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(1.3); }
+          70%  { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        .msg-new-me   { animation: msgSlideRight 0.25s ease-out; }
+        .msg-new-them { animation: msgSlideLeft  0.25s ease-out; }
+        .emoji-pop-active { animation: emojiPop 0.3s ease-out; }
+      `}</style>
+
       {/* Messages */}
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto space-y-3 max-h-72 pr-1">
         {loading ? (
           <div className="text-center py-6 text-xs font-bold" style={{ color: '#C8B8A8' }}>よみこみ中...</div>
         ) : messages.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm font-bold" style={{ color: '#2D1B0E' }}>最初のメッセージを送ってみよう 👋</p>
+            <div className="text-2xl mb-2">💬</div>
+            <p className="text-sm font-bold" style={{ color: '#2D1B0E' }}>最初のメッセージを送ってみよう！</p>
             <p className="text-xs mt-1 font-bold" style={{ color: '#C8B8A8' }}>グループメンバーだけが見られます</p>
           </div>
         ) : (
           messages.map((msg) => {
             const isMe = msg.user.id === currentUserId
             const color = getColor(msg.user.id)
+            const isNew = newIds.has(msg.id)
             return (
-              <div key={msg.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div key={msg.id}
+                className={`flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'} ${isNew ? (isMe ? 'msg-new-me' : 'msg-new-them') : ''}`}>
                 {!isMe && (
                   <div className="mt-0.5">
                     <Avatar name={msg.user.name} avatarUrl={msg.user.avatarUrl} size={28} color={color} />
@@ -146,8 +180,23 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
         <div ref={bottomRef} />
       </div>
 
+      {/* Quick emoji bar */}
+      <div className="flex gap-2 mt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {QUICK_EMOJIS.map((emoji) => (
+          <button
+            key={emoji}
+            type="button"
+            onClick={() => handleSend(undefined, emoji)}
+            disabled={sending}
+            className="flex-shrink-0 w-9 h-9 rounded-2xl text-lg flex items-center justify-center transition-all active:scale-90"
+            style={{ background: '#FAFAF8', border: '1.5px solid #EDE8E3' }}>
+            {emoji}
+          </button>
+        ))}
+      </div>
+
       {/* Input */}
-      <form onSubmit={handleSend} className="mt-3 flex gap-2">
+      <form onSubmit={handleSend} className="mt-2 flex gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -159,7 +208,7 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
           onBlur={(e) => { e.target.style.borderColor = '#EDE8E3' }}
         />
         <button type="submit" disabled={!input.trim() || sending}
-          className="w-10 h-10 rounded-2xl flex items-center justify-center text-white disabled:opacity-40 transition-opacity"
+          className="w-10 h-10 rounded-2xl flex items-center justify-center text-white disabled:opacity-40 transition-all active:scale-90"
           style={{ background: '#F07050' }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
