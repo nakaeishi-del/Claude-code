@@ -262,10 +262,25 @@ export default function GroupDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
-        <div className="flex flex-col items-center gap-3">
-          <BearMascot size={80} mood="sleep" animate />
-          <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+      <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+        <div className="max-w-2xl mx-auto px-4 pt-6 pb-24">
+          <div className="h-4 w-32 rounded-full shimmer mb-6" />
+          <div className="bg-white rounded-2xl p-6 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
+            <div className="h-6 w-1/2 rounded-full shimmer mb-3" />
+            <div className="h-3 w-3/4 rounded-full shimmer mb-5" />
+            <div className="flex gap-3 mt-5">
+              {[1, 2, 3].map((i) => <div key={i} className="w-9 h-9 rounded-full shimmer" />)}
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
+            <div className="h-4 w-40 rounded-full shimmer mb-4" />
+            <div className="grid grid-cols-7 gap-1.5">
+              {Array.from({ length: 28 }).map((_, i) => (
+                <div key={i} className="aspect-square rounded-xl shimmer" />
+              ))}
+            </div>
+          </div>
+          <div className="h-14 w-full rounded-2xl shimmer" />
         </div>
       </div>
     )

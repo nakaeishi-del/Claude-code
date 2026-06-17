@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import GroupCard from '@/components/GroupCard'
@@ -156,7 +156,7 @@ export default function DashboardPage() {
             ].map(({ label, value, icon, color, bg }) => (
               <div key={label} className="rounded-2xl py-3 px-2 text-center" style={{ background: bg }}>
                 <div className="text-base mb-0.5">{icon}</div>
-                <div className="text-xl font-black" style={{ color }}>{value}</div>
+                <div className="text-xl font-black" style={{ color }}><CountUp target={value} /></div>
                 <div className="text-[10px] font-bold" style={{ color }}>{label}</div>
               </div>
             ))}
@@ -269,8 +269,11 @@ export default function DashboardPage() {
               <div className="w-10 h-1 rounded-full" style={{ background: '#EDE8E3' }} />
             </div>
             <div className="p-6 pt-4">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-black" style={{ color: '#2D1B0E' }}>グループを作成</h3>
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <BearMascot size={40} mood="excited" animate animationType="bounce" />
+                  <h3 className="text-lg font-black" style={{ color: '#2D1B0E' }}>グループを作成</h3>
+                </div>
                 <button onClick={() => setShowModal(false)} className="p-1" style={{ color: '#C8B8A8' }}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -321,6 +324,26 @@ export default function DashboardPage() {
 
 function SLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-sm font-black" style={{ color: '#9B8B7E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{children}</h2>
+}
+
+function CountUp({ target }: { target: number }) {
+  const [count, setCount] = useState(0)
+  const rafRef = useRef<number>(0)
+  useEffect(() => {
+    if (target === 0) { setCount(0); return }
+    const start = Date.now()
+    const duration = 600
+    function tick() {
+      const elapsed = Date.now() - start
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCount(Math.round(eased * target))
+      if (progress < 1) rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [target])
+  return <>{count}</>
 }
 
 function ModalField({ label, type, placeholder, value, onChange, required }: {

@@ -79,7 +79,7 @@ function LoginContent() {
   const mood = getBearMood()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10" style={{ background: '#FFFDF9' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10 relative overflow-hidden" style={{ background: '#FFFDF9' }}>
       <style>{`
         @keyframes loginEnter {
           from { opacity: 0; transform: translateY(20px) scale(0.97); }
@@ -94,15 +94,25 @@ function LoginContent() {
           75% { transform: translateX(-3px); }
           90% { transform: translateX(3px); }
         }
-        @keyframes bearMoodChange {
-          0%   { transform: scale(1); }
-          30%  { transform: scale(1.08) rotate(-3deg); }
-          60%  { transform: scale(0.95) rotate(2deg); }
-          100% { transform: scale(1) rotate(0deg); }
+        @keyframes floatBlob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33%       { transform: translate(8px, -12px) scale(1.04); }
+          66%       { transform: translate(-6px, 6px) scale(0.97); }
         }
         .login-card-enter { animation: loginEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
         .card-shake { animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+        .blob1 { animation: floatBlob 8s ease-in-out infinite; }
+        .blob2 { animation: floatBlob 10s ease-in-out 2s infinite; }
+        .blob3 { animation: floatBlob 7s ease-in-out 4s infinite; }
       `}</style>
+
+      {/* Decorative background blobs */}
+      <div className="blob1 absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #FFF0EC 0%, transparent 70%)', opacity: 0.7 }} />
+      <div className="blob2 absolute -bottom-16 -right-16 w-72 h-72 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #F0FAF2 0%, transparent 70%)', opacity: 0.6 }} />
+      <div className="blob3 absolute top-1/2 -right-24 w-48 h-48 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #EEF3FC 0%, transparent 70%)', opacity: 0.5 }} />
 
       {/* Bear + Brand */}
       <div className="flex flex-col items-center mb-8" style={{
@@ -187,6 +197,25 @@ function LoginContent() {
             <Btn loading={loading} label="はじめる 🎉" />
           </form>
         )}
+      </div>
+
+      {/* Feature highlights */}
+      <div className="mt-6 flex flex-col gap-2 w-full max-w-sm" style={{
+        opacity: mounted ? 1 : 0,
+        transform: mounted ? 'translateY(0)' : 'translateY(12px)',
+        transition: 'opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s',
+      }}>
+        {[
+          { icon: '🗓️', text: '空き時間を自動マッチング' },
+          { icon: '🍽️', text: 'AIがお店を自動提案' },
+          { icon: '🗳️', text: 'みんなで投票して確定' },
+        ].map(({ icon, text }) => (
+          <div key={text} className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid #EDE8E3' }}>
+            <span className="text-base">{icon}</span>
+            <span className="text-xs font-bold" style={{ color: '#9B8B7E' }}>{text}</span>
+          </div>
+        ))}
       </div>
     </div>
   )

@@ -96,7 +96,6 @@ function SettingsContent() {
   const [loading, setLoading] = useState(true)
   const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const [priceRange, setPriceRange] = useState('mid')
   const [editName, setEditName] = useState('')
@@ -157,7 +156,6 @@ function SettingsContent() {
 
   async function handleSave() {
     setSaving(true)
-    setSaveSuccess(false)
     await Promise.all([
       fetch('/api/availability', {
         method: 'PUT',
@@ -172,9 +170,7 @@ function SettingsContent() {
     ])
     await fetchData()
     setSaving(false)
-    setSaveSuccess(true)
     showToast('設定を保存しました', 'success')
-    setTimeout(() => setSaveSuccess(false), 3000)
   }
 
   if (loading) {
@@ -335,25 +331,25 @@ function SettingsContent() {
               {achievements.filter((a) => a.unlocked).length}/{achievements.length}
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2.5">
+          <div className="mt-4 grid grid-cols-3 gap-2.5 stagger-children">
             {achievements.map((a) => (
               <div
                 key={a.id}
-                className="rounded-2xl p-3 text-center relative"
+                className="rounded-2xl p-3 text-center relative transition-transform hover:scale-105"
                 style={{
                   background: a.unlocked
                     ? 'linear-gradient(135deg, #FFFDF9, #FFF8F0)'
                     : '#FAFAF8',
                   border: a.unlocked ? '1.5px solid #F5C4B0' : '1.5px dashed #EDE8E3',
                   opacity: a.unlocked ? 1 : 0.45,
-                  boxShadow: a.unlocked ? '0 2px 8px rgba(240,112,80,0.12)' : 'none',
+                  boxShadow: a.unlocked ? '0 2px 12px rgba(240,112,80,0.18)' : 'none',
                 }}
               >
                 {a.unlocked && (
                   <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white"
                     style={{ background: '#F07050' }}>✓</div>
                 )}
-                <div className="text-3xl mb-1.5 leading-none">{a.icon}</div>
+                <div className="text-3xl mb-1.5 leading-none" style={{ filter: a.unlocked ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
                 <p className="text-[11px] font-black leading-tight" style={{ color: a.unlocked ? '#2D1B0E' : '#9B8B7E' }}>{a.label}</p>
                 <p className="text-[9px] font-bold mt-0.5 leading-tight" style={{ color: '#C8B8A8' }}>{a.desc}</p>
               </div>
@@ -387,9 +383,17 @@ function SettingsContent() {
         </Card>
 
         <button onClick={handleSave} disabled={saving}
-          className="w-full py-4 rounded-2xl text-white font-black text-sm disabled:opacity-50"
+          className="w-full py-4 rounded-2xl text-white font-black text-sm disabled:opacity-50 transition-all active:scale-[0.98]"
           style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
-          {saving ? '保存中...' : '設定を保存'}
+          {saving ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              保存中...
+            </span>
+          ) : '設定を保存'}
         </button>
 
         {googleConnected && (
