@@ -595,7 +595,7 @@ export default function GroupDetailPage() {
         {likedEvents.length > 0 && (
           <section className="mb-6">
             <SLabel>みんなが気になっているイベント ♡</SLabel>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 stagger-children">
               {likedEvents.map(({ event, likedBy }) => {
                 const genreEmoji: Record<string, string> = { music: '🎵', food: '🍜', sports: '⚽', art: '🎨', theater: '🎭', festival: '🎉' }
                 const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(event.venue + ' ' + event.area)}`

@@ -405,8 +405,10 @@ function SettingsContent() {
         </button>
 
         {googleConnected && (
-          <div className="p-3 rounded-2xl text-sm text-center font-bold" style={{ background: '#EEF3FC', border: '1.5px solid #C5D9FA', color: '#4285F4' }}>
-            Googleカレンダーを連携しました
+          <div className="scale-in p-4 rounded-2xl text-sm text-center font-bold flex items-center justify-center gap-2"
+            style={{ background: '#EEF3FC', border: '1.5px solid #C5D9FA', color: '#4285F4' }}>
+            <span>✓</span>
+            Googleカレンダーを連携しました！
           </div>
         )}
         {googleError && (
