@@ -72,30 +72,38 @@ export default function DashboardPage() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
-      <main className="max-w-5xl mx-auto px-4 pt-7 pb-24 sm:pb-10">
-        {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>
-            おかえり、{user?.name}さん 👋
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>今日も友達との時間を作ろう</p>
+      <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10">
+        {/* Hero welcome card */}
+        <div className="rounded-3xl px-6 py-8 mb-6 relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #F07050 0%, #F09070 60%, #F0B090 100%)' }}>
+          <div className="relative z-10">
+            <p className="text-white/70 text-xs font-black uppercase tracking-widest mb-1">tomomeet</p>
+            <h1 className="text-2xl font-black text-white leading-tight">
+              おかえり、{user?.name} 👋
+            </h1>
+            <p className="mt-1.5 text-sm text-white/80 font-bold">友達との次の約束、一緒に作ろう</p>
+          </div>
+          {/* decorative circles */}
+          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20" style={{ background: 'white' }} />
+          <div className="absolute -right-4 -bottom-10 w-24 h-24 rounded-full opacity-10" style={{ background: 'white' }} />
         </div>
 
         {/* Confirmed upcoming */}
         {confirmedProposals.length > 0 && (
-          <section className="mb-8">
-            <SLabel>今後の予定</SLabel>
+          <section className="mb-6">
+            <SLabel>今後の確定予定 🎉</SLabel>
             <div className="mt-3 grid gap-3">
               {confirmedProposals.map((p) => (
-                <div key={p.id} className="bg-white rounded-2xl p-4 flex items-center gap-4" style={{ border: '1.5px solid #D4EDD8' }}>
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#F0FAF2' }}>🍽️</div>
+                <div key={p.id} className="rounded-2xl p-4 flex items-center gap-4"
+                  style={{ background: 'linear-gradient(135deg, #F0FAF2, #E8F7EC)', border: '1.5px solid #BBF7D0' }}>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: 'white' }}>🍽️</div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm" style={{ color: '#2D1B0E' }}>{p.restaurantName}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#9B8B7E' }}>{p.groupName}</p>
+                    <p className="font-black text-sm" style={{ color: '#2D1B0E' }}>{p.restaurantName}</p>
+                    <p className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{p.groupName}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold" style={{ color: '#5BAF7A' }}>{p.proposedDate}</p>
-                    <p className="text-xs" style={{ color: '#7AC8A0' }}>確定済み</p>
+                    <p className="text-sm font-black" style={{ color: '#3B8A5A' }}>{p.proposedDate}</p>
+                    <p className="text-xs font-bold" style={{ color: '#7AC8A0' }}>確定！</p>
                   </div>
                 </div>
               ))}

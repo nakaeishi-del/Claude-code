@@ -42,6 +42,7 @@ type Event = {
   description?: string
   liked: boolean
   likeCount: number
+  friendLikeCount: number
 }
 
 type Group = {
@@ -223,11 +224,17 @@ export default function EventsPage() {
                                 )}
                               </button>
                             </div>
-                            <div className="mt-2 flex items-center gap-2">
+                            <div className="mt-2 flex items-center gap-2 flex-wrap">
                               <span className="text-[11px] px-2 py-0.5 rounded-full font-black"
                                 style={{ color: gs.color, background: gs.bg }}>
                                 {genreLabels[event.genre] || event.genre}
                               </span>
+                              {event.friendLikeCount > 0 && (
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-black"
+                                  style={{ background: '#FFF0EC', color: '#F07050' }}>
+                                  👥 友達{event.friendLikeCount}人も気になってる
+                                </span>
+                              )}
                               {event.liked && (
                                 <button onClick={() => openInvite(event)}
                                   className="text-xs font-black flex items-center gap-1"
