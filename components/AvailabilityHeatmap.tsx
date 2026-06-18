@@ -84,7 +84,7 @@ export default function AvailabilityHeatmap({ groupId, memberCount, onSelectDate
           <div key={`pad-${i}`} />
         ))}
 
-        {days.map((d) => {
+        {days.map((d, cellIndex) => {
           const color = scoreColor(d.freeCount, d.busyCount, memberCount)
           const good = isGood(d.freeCount, d.busyCount, memberCount)
           const isSelected = selected === d.date
@@ -103,7 +103,7 @@ export default function AvailabilityHeatmap({ groupId, memberCount, onSelectDate
               }}
               disabled={!good}
               title={`${d.date}（空き${d.freeCount}/${memberCount}人）`}
-              className="aspect-square rounded-xl flex items-center justify-center text-xs font-black transition-all relative"
+              className="heatmap-cell aspect-square rounded-xl flex items-center justify-center text-xs font-black transition-all relative"
               style={{
                 background: isSelected ? '#F07050' : color,
                 color: isSelected ? 'white' : good ? '#166534' : dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#3B82F6' : '#C4B8AE',
@@ -111,6 +111,7 @@ export default function AvailabilityHeatmap({ groupId, memberCount, onSelectDate
                 transform: isSelected ? 'scale(1.08)' : 'scale(1)',
                 cursor: good ? 'pointer' : 'default',
                 boxShadow: isSelected ? '0 2px 8px rgba(240,112,80,0.35)' : 'none',
+                ['--ci' as string]: cellIndex,
               }}
             >
               {dayNum}

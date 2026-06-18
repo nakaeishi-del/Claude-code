@@ -69,6 +69,12 @@ export default function BottomNav() {
                   setTimeout(() => setTappedHref(null), 400)
                 }}>
 
+                {/* Active top indicator line */}
+                {active && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+                    style={{ background: '#F07050' }} />
+                )}
+
                 {/* Active pill background */}
                 {active && (
                   <span className="absolute top-1 left-1/2 -translate-x-1/2 w-12 h-9 rounded-2xl"
@@ -91,7 +97,8 @@ export default function BottomNav() {
             )
           })}
         </div>
-        <div className="h-safe-bottom" />
+        {/* iOS safe area */}
+        <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
       </nav>
     </>
   )

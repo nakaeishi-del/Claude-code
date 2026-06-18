@@ -1,5 +1,7 @@
 'use client'
 
+import { useToast } from '@/components/Toast'
+
 interface ShareCardProps {
   date: string        // "2024-03-15"
   time: string        // "19:00"
@@ -38,6 +40,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function ShareCard({ date, time, restaurant, area, genre, members, cost }: ShareCardProps) {
+  const { showToast } = useToast()
   const emoji = getGenreEmoji(genre)
   const dateLabel = formatDate(date)
 
@@ -46,7 +49,9 @@ export default function ShareCard({ date, time, restaurant, area, genre, members
 
   function copyText() {
     navigator.clipboard.writeText(shareText).then(() => {
-      alert('コピーしました！')
+      showToast('コピーしました！', 'success')
+    }).catch(() => {
+      showToast('コピーに失敗しました', 'error')
     })
   }
 

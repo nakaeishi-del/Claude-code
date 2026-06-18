@@ -1,6 +1,6 @@
 interface BearMascotProps {
   size?: number
-  mood?: 'happy' | 'wave' | 'sleep' | 'wink' | 'excited' | 'celebrate' | 'love' | 'thinking'
+  mood?: 'happy' | 'wave' | 'sleep' | 'wink' | 'excited' | 'celebrate' | 'love' | 'thinking' | 'sad'
   className?: string
   animate?: boolean
   animationType?: 'breathe' | 'bounce' | 'float' | 'wave' | 'none'
@@ -99,6 +99,13 @@ export default function BearMascot({
           50%       { transform: scale(1.12); opacity: 1; }
         }
         .thought-bubble { animation: thoughtPop 2s ease-in-out infinite; }
+        @keyframes tearDrop {
+          0%   { opacity: 0; transform: translateY(0); }
+          20%  { opacity: 1; }
+          100% { opacity: 0; transform: translateY(14px); }
+        }
+        .tear1 { animation: tearDrop 2s ease-in 0.4s infinite; }
+        .tear2 { animation: tearDrop 2s ease-in 1.4s infinite; }
         .bear-body { ${bodyAnimation} }
         .wave-arm { ${waveArmAnimation} }
         .eye-l { animation: blink 4.5s ease-in-out infinite; transform-origin: 38px 52px; }
@@ -150,6 +157,17 @@ export default function BearMascot({
           <>
             <path d="M36 52 Q40 48 44 52" stroke="#2D1B0E" strokeWidth="2.2" strokeLinecap="round" fill="none" />
             <path d="M56 52 Q60 48 64 52" stroke="#2D1B0E" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          </>
+        ) : mood === 'sad' ? (
+          <>
+            {/* Downward-cast eyes */}
+            <circle cx="38" cy="53" r="4.5" fill="#2D1B0E" />
+            <circle cx="62" cy="53" r="4.5" fill="#2D1B0E" />
+            <circle cx="36.5" cy="51.5" r="1.5" fill="white" />
+            <circle cx="60.5" cy="51.5" r="1.5" fill="white" />
+            {/* Worried brows */}
+            <path d="M34 46 Q38 43.5 42 46" stroke="#7A4020" strokeWidth="1.8" strokeLinecap="round" fill="none" transform="rotate(8 38 45)" />
+            <path d="M58 46 Q62 43.5 66 46" stroke="#7A4020" strokeWidth="1.8" strokeLinecap="round" fill="none" transform="rotate(-8 62 45)" />
           </>
         ) : mood === 'wink' ? (
           <>
@@ -226,6 +244,9 @@ export default function BearMascot({
         {/* Mouth */}
         {mood === 'happy' || mood === 'wave' || mood === 'wink' || mood === 'celebrate' || mood === 'love' ? (
           <path d="M43 68 Q50 75 57 68" stroke="#7A4020" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+        ) : mood === 'sad' ? (
+          /* Downward frown */
+          <path d="M43 72 Q50 67 57 72" stroke="#7A4020" strokeWidth="1.8" strokeLinecap="round" fill="none" />
         ) : mood === 'excited' ? (
           /* Wide open smile */
           <path d="M41 67 Q50 77 59 67" stroke="#7A4020" strokeWidth="2" strokeLinecap="round" fill="none" />
@@ -288,6 +309,14 @@ export default function BearMascot({
           <text className="sp2" x="82" y="55" fontSize="8" fill="#F07050">✦</text>
           <text className="sp3" x="20" y="30" fontSize="10" fill="#5BC4BF">★</text>
           <text className="sp4" x="74" y="40" fontSize="9" fill="#A78BFA">✦</text>
+        </>
+      )}
+
+      {/* Sad tears */}
+      {mood === 'sad' && animate && (
+        <>
+          <ellipse className="tear1" cx="34" cy="60" rx="2" ry="2.8" fill="#9BC8F0" opacity="0.8" />
+          <ellipse className="tear2" cx="66" cy="60" rx="2" ry="2.8" fill="#9BC8F0" opacity="0.8" />
         </>
       )}
 

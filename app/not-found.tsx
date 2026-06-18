@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center"
       style={{ background: '#FFFDF9' }}>
-      <BearMascot size={100} mood="sleep" animate animationType="breathe" />
+      <BearMascot size={100} mood="sad" animate animationType="float" />
 
       <h1 className="text-6xl font-black mt-6 mb-2" style={{ color: '#F07050', letterSpacing: '-2px' }}>
         404
