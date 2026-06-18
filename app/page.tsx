@@ -78,6 +78,7 @@ function LoginContent() {
   }
 
   const mood = getBearMood()
+  const [hoveredBear, setHoveredBear] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10 relative overflow-hidden" style={{ background: '#FFFDF9' }}>
@@ -121,8 +122,10 @@ function LoginContent() {
         transform: mounted ? 'translateY(0)' : 'translateY(-20px)',
         transition: 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}>
-        <div style={{ transition: 'all 0.3s ease' }}>
-          <BearMascot size={96} mood={mood} animate={!loading}
+        <div style={{ transition: 'all 0.3s ease', cursor: 'pointer' }}
+          onMouseEnter={() => setHoveredBear(true)}
+          onMouseLeave={() => setHoveredBear(false)}>
+          <BearMascot size={96} mood={hoveredBear && !loading && !error ? 'wink' : mood} animate={!loading}
             animationType={loading ? 'bounce' : undefined} />
         </div>
         <h1 className="mt-3 text-3xl font-black tracking-tight" style={{ color: '#F07050', letterSpacing: '-0.5px' }}>
