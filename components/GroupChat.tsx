@@ -162,38 +162,68 @@ export default function GroupChat({ groupId, currentUserId }: Props) {
             ))}
           </div>
         ) : messages.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-2xl mb-2">💬</div>
-            <p className="text-sm font-bold" style={{ color: '#2D1B0E' }}>最初のメッセージを送ってみよう！</p>
+          <div className="flex flex-col items-center py-8 text-center">
+            <div className="text-3xl mb-2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.08))' }}>💬</div>
+            <p className="text-sm font-black" style={{ color: '#2D1B0E' }}>最初のメッセージを送ってみよう！</p>
             <p className="text-xs mt-1 font-bold" style={{ color: '#C8B8A8' }}>グループメンバーだけが見られます</p>
+            <div className="flex gap-2 mt-4">
+              {['👋', '🎉', '楽しみ！'].map((q) => (
+                <button key={q} onClick={() => handleSend(undefined, q)}
+                  className="text-xs font-black px-3 py-1.5 rounded-2xl transition-all active:scale-95"
+                  style={{ background: '#FFF0EC', color: '#F07050', border: '1.5px solid #F5C4B0' }}>
+                  {q}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
-          messages.map((msg) => {
+          messages.map((msg, i) => {
             const isMe = msg.user.id === currentUserId
             const color = getColor(msg.user.id)
             const isNew = newIds.has(msg.id)
+            const prevMsg = messages[i - 1]
+            const nextMsg = messages[i + 1]
+            const isSameAsPrev = prevMsg && prevMsg.user.id === msg.user.id
+            const isSameAsNext = nextMsg && nextMsg.user.id === msg.user.id
+            const isLastInGroup = !isSameAsNext
+
+            // Adjust bubble corner based on grouping
+            const myBubbleRadius = isSameAsNext
+              ? { borderRadius: '18px 18px 6px 18px' }
+              : isSameAsPrev
+              ? { borderRadius: '18px 6px 6px 18px' }
+              : { borderRadius: '18px 18px 6px 18px' }
+            const theirBubbleRadius = isSameAsNext
+              ? { borderRadius: '18px 18px 18px 6px' }
+              : isSameAsPrev
+              ? { borderRadius: '6px 18px 18px 6px' }
+              : { borderRadius: '18px 18px 18px 6px' }
+
             return (
               <div key={msg.id}
-                className={`flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'} ${isNew ? (isMe ? 'msg-new-me' : 'msg-new-them') : ''}`}>
+                className={`flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'} ${isNew ? (isMe ? 'msg-new-me' : 'msg-new-them') : ''}`}
+                style={{ marginBottom: isSameAsNext ? '2px' : '8px' }}>
                 {!isMe && (
-                  <div className="mt-0.5">
-                    <Avatar name={msg.user.name} avatarUrl={msg.user.avatarUrl} size={28} color={color} />
+                  <div className="mt-auto flex-shrink-0" style={{ width: 28, opacity: isLastInGroup ? 1 : 0 }}>
+                    {isLastInGroup && <Avatar name={msg.user.name} avatarUrl={msg.user.avatarUrl} size={28} color={color} />}
                   </div>
                 )}
                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[75%]`}>
-                  {!isMe && (
-                    <span className="text-[10px] font-black mb-0.5" style={{ color: '#9B8B7E' }}>{msg.user.name}</span>
+                  {!isMe && !isSameAsPrev && (
+                    <span className="text-[10px] font-black mb-1" style={{ color: '#9B8B7E' }}>{msg.user.name}</span>
                   )}
-                  <div className="px-3 py-2 rounded-2xl text-sm font-bold leading-relaxed"
+                  <div className="px-3 py-2 text-sm font-bold leading-relaxed"
                     style={isMe
-                      ? { background: '#F07050', color: 'white', borderBottomRightRadius: '6px' }
-                      : { background: '#FAFAF8', color: '#2D1B0E', border: '1.5px solid #EDE8E3', borderBottomLeftRadius: '6px' }
+                      ? { background: '#F07050', color: 'white', ...myBubbleRadius }
+                      : { background: '#FAFAF8', color: '#2D1B0E', border: '1.5px solid #EDE8E3', ...theirBubbleRadius }
                     }>
                     {msg.content}
                   </div>
-                  <span className="text-[10px] font-bold mt-0.5" style={{ color: '#C8B8A8' }}>
-                    {formatTime(msg.createdAt)}
-                  </span>
+                  {isLastInGroup && (
+                    <span className="text-[10px] font-bold mt-0.5 px-1" style={{ color: '#C8B8A8' }}>
+                      {formatTime(msg.createdAt)}
+                    </span>
+                  )}
                 </div>
               </div>
             )
