@@ -44,18 +44,32 @@ export default function DashboardPage() {
   const [form, setForm] = useState({ name: '', description: '', priceRange: 'mid' })
   const [showConfetti, setShowConfetti] = useState(false)
   const [memories, setMemories] = useState<Memory[]>([])
+  const [loadError, setLoadError] = useState(false)
   const { showToast } = useToast()
 
   const fetchData = useCallback(async () => {
-    const [meRes, groupsRes, activityRes, historyRes] = await Promise.all([
-      fetch('/api/auth/me'), fetch('/api/groups'), fetch('/api/me/activity'), fetch('/api/me/history')
-    ])
-    if (!meRes.ok) { router.push('/'); return }
-    setUser((await meRes.json()).user)
-    setGroups((await groupsRes.json()).groups || [])
-    if (activityRes.ok) setActivities((await activityRes.json()).activities || [])
-    if (historyRes.ok) setMemories((await historyRes.json()).memories || [])
-    setLoading(false)
+    // Resilient: any single API failure must never leave the page stuck on
+    // the loading skeleton (serverless cold starts can return non-JSON).
+    const safeJson = async (p: Promise<Response>) => {
+      try {
+        const res = await p
+        return { ok: res.ok, status: res.status, data: res.ok ? await res.json() : null }
+      } catch { return { ok: false, status: 0, data: null } }
+    }
+    try {
+      const [me, grps, act, hist] = await Promise.all([
+        safeJson(fetch('/api/auth/me')), safeJson(fetch('/api/groups')),
+        safeJson(fetch('/api/me/activity')), safeJson(fetch('/api/me/history')),
+      ])
+      if (me.status === 401) { router.push('/'); return }
+      if (me.ok) setUser(me.data.user)
+      if (grps.ok) setGroups(grps.data.groups || [])
+      if (act.ok) setActivities(act.data.activities || [])
+      if (hist.ok) setMemories(hist.data.memories || [])
+      setLoadError(!me.ok || !grps.ok)
+    } finally {
+      setLoading(false)
+    }
   }, [router])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -128,6 +142,21 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center" style={{ background: '#FFFDF9' }}>
+        <BearMascot size={90} mood="sad" animate animationType="float" />
+        <p className="mt-5 text-lg font-black" style={{ color: '#2D1B0E' }}>データを読み込めませんでした</p>
+        <p className="mt-1 text-sm font-bold" style={{ color: '#9B8B7E' }}>通信状態を確認してもう一度お試しください</p>
+        <button onClick={() => { setLoadError(false); setLoading(true); fetchData() }}
+          className="mt-6 px-8 py-3.5 rounded-2xl text-white text-sm font-black active:scale-95 transition-all"
+          style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.3)' }}>
+          もう一度読み込む
+        </button>
       </div>
     )
   }
