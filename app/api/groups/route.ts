@@ -18,20 +18,36 @@ export async function GET(request: NextRequest) {
           },
           proposals: {
             orderBy: { createdAt: 'desc' },
+            include: { votes: { select: { userId: true } } },
+          },
+          messages: {
+            orderBy: { createdAt: 'desc' },
             take: 1,
-            include: { votes: true },
+            select: { createdAt: true, content: true, user: { select: { name: true } } },
           },
         },
       },
     },
   })
 
-  const groups = memberships.map((m) => ({
-    ...m.group,
-    memberCount: m.group.members.length,
-    myRole: m.role,
-    latestProposal: m.group.proposals[0] || null,
-  }))
+  const groups = memberships.map((m) => {
+    const allProposals = m.group.proposals
+    const pendingVoteCount = allProposals.filter(
+      (p) => p.status === 'pending' && !p.votes.some((v) => v.userId === userId)
+    ).length
+    const latestProposal = allProposals[0] || null
+    const lastMessage = m.group.messages[0] || null
+    return {
+      ...m.group,
+      proposals: undefined,
+      messages: undefined,
+      memberCount: m.group.members.length,
+      myRole: m.role,
+      latestProposal,
+      pendingVoteCount,
+      lastMessage,
+    }
+  })
 
   return NextResponse.json({ groups })
 }

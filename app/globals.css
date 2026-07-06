@@ -15,3 +15,206 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* Page entry animation */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageEnter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Staggered children */
+.stagger-children > * {
+  opacity: 0;
+  animation: pageEnter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.30s; }
+
+/* Confetti pieces */
+@keyframes confettiFall {
+  0%   { transform: translateY(-10px) rotate(0deg) scale(1);   opacity: 1; }
+  100% { transform: translateY(120px) rotate(540deg) scale(0.4); opacity: 0; }
+}
+@keyframes confettiLeft {
+  0%   { transform: translate(-10px, -10px) rotate(0deg);   opacity: 1; }
+  100% { transform: translate(-60px, 100px) rotate(-360deg); opacity: 0; }
+}
+@keyframes confettiRight {
+  0%   { transform: translate(10px, -10px) rotate(0deg);  opacity: 1; }
+  100% { transform: translate(60px, 100px) rotate(360deg); opacity: 0; }
+}
+
+/* Vote button pop */
+@keyframes votePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.15); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.vote-pop {
+  animation: votePop 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Like heart burst */
+@keyframes heartBurst {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.4); }
+  60%  { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+.heart-burst {
+  animation: heartBurst 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Floating notification */
+@keyframes floatUp {
+  0%   { transform: translateY(0); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+/* Slide in from bottom (sheets) */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Gentle pulse for badges */
+@keyframes gentlePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.8; transform: scale(1.06); }
+}
+.gentle-pulse {
+  animation: gentlePulse 2s ease-in-out infinite;
+}
+
+/* Shimmer loading skeleton */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, #F5F0EB 0%, #FAFAF8 40%, #FFF8F5 50%, #FAFAF8 60%, #F5F0EB 100%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Tab pop on bottom nav */
+@keyframes tabPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  70%  { transform: scale(0.93); }
+  100% { transform: scale(1); }
+}
+.tab-pop {
+  animation: tabPop 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Bounce-in for modals & popovers */
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.90) translateY(8px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.bounce-in {
+  animation: bounceIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Scale-in for cards */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Slide right for panel transitions */
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-right {
+  animation: slideRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Extend stagger children to 9 items */
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.40s; }
+.stagger-children > *:nth-child(9) { animation-delay: 0.45s; }
+
+/* Heatmap cell stagger (based on --cell-index custom property) */
+.heatmap-cell {
+  opacity: 0;
+  animation: pageEnter 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: calc(var(--ci, 0) * 18ms);
+}
+
+/* ============================================
+   Design tokens (tomomeet design system v2)
+   ============================================ */
+:root {
+  --tm-coral: #F07050;
+  --tm-coral-dark: #C85030;
+  --tm-coral-bg: #FFF0EC;
+  --tm-teal: #7AC8A0;
+  --tm-teal-dark: #3B8A5A;
+  --tm-teal-bg: #F0FAF2;
+  --tm-cream: #FFFDF9;
+  --tm-ink: #2D1B0E;
+  --tm-ink-soft: #6B5B4E;
+  --tm-muted: #9B8B7E;
+  --tm-faint: #C8B8A8;
+  --tm-line: #EDE8E3;
+  --tm-surface: #FAFAF8;
+
+  /* Layered elevation scale (soft, modern-app feel) */
+  --tm-shadow-xs: 0 1px 2px rgba(45,27,14,0.04);
+  --tm-shadow-sm: 0 1px 3px rgba(45,27,14,0.05), 0 2px 8px rgba(45,27,14,0.04);
+  --tm-shadow-md: 0 2px 6px rgba(45,27,14,0.05), 0 6px 20px rgba(45,27,14,0.07);
+  --tm-shadow-lg: 0 4px 12px rgba(45,27,14,0.06), 0 12px 36px rgba(45,27,14,0.10);
+  --tm-shadow-coral: 0 4px 16px rgba(240,112,80,0.28);
+}
+
+/* Card that lifts on hover and compresses on press */
+.card-lift {
+  transition: transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--tm-shadow-sm);
+}
+.card-lift:hover  { transform: translateY(-2px); box-shadow: var(--tm-shadow-md); }
+.card-lift:active { transform: translateY(0) scale(0.985); box-shadow: var(--tm-shadow-xs); }
+
+/* Accessible focus ring (keyboard only) */
+:focus-visible {
+  outline: 2.5px solid var(--tm-coral);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible, a:focus-visible { border-radius: 14px; }
+
+/* Hide scrollbars on horizontal chip rows */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Number tabular alignment for countdowns/stats */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Respect reduced-motion preferences (accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

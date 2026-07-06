@@ -42,10 +42,10 @@ export async function POST(
       return NextResponse.json({ error: 'このユーザーは既にグループのメンバーです' }, { status: 400 })
     }
 
-    // Check member limit (max 4)
+    // Check member limit (max 8)
     const memberCount = await prisma.groupMember.count({ where: { groupId } })
-    if (memberCount >= 4) {
-      return NextResponse.json({ error: 'グループのメンバーは最大4人までです' }, { status: 400 })
+    if (memberCount >= 8) {
+      return NextResponse.json({ error: 'グループのメンバーは最大8人までです' }, { status: 400 })
     }
 
     const member = await prisma.groupMember.create({

@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import AvailabilityGrid from '@/components/AvailabilityGrid'
 import BearMascot from '@/components/BearMascot'
 import Avatar from '@/components/Avatar'
+import { useToast } from '@/components/Toast'
 
 interface User {
   id: string
@@ -14,6 +15,14 @@ interface User {
   priceRange: string
   avatarUrl?: string | null
   googleCalendarConnected: boolean
+}
+
+interface Achievement {
+  id: string
+  icon: string
+  label: string
+  desc: string
+  unlocked: boolean
 }
 
 // Resize an image file to a square data URL (JPEG, ~200px) for compact storage.
@@ -85,18 +94,23 @@ function SettingsContent() {
   const googleError = searchParams.get('error')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const [priceRange, setPriceRange] = useState('mid')
   const [editName, setEditName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarError, setAvatarError] = useState('')
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
+  const [achievements, setAchievements] = useState<Achievement[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchData = useCallback(async () => {
-    const [meRes, availRes] = await Promise.all([fetch('/api/auth/me'), fetch('/api/availability')])
+    const [meRes, availRes, achievementsRes] = await Promise.all([
+      fetch('/api/auth/me'),
+      fetch('/api/availability'),
+      fetch('/api/me/achievements'),
+    ])
     if (!meRes.ok) { router.push('/'); return }
     const meData = await meRes.json()
     const availData = await availRes.json()
@@ -105,6 +119,10 @@ function SettingsContent() {
     setEditName(meData.user.name)
     setAvatarUrl(meData.user.avatarUrl ?? null)
     setAvailability(availData.availability || [])
+    if (achievementsRes.ok) {
+      const achievementsData = await achievementsRes.json()
+      setAchievements(achievementsData.achievements || [])
+    }
     setLoading(false)
   }, [router])
 
@@ -138,7 +156,6 @@ function SettingsContent() {
 
   async function handleSave() {
     setSaving(true)
-    setSaveSuccess(false)
     await Promise.all([
       fetch('/api/availability', {
         method: 'PUT',
@@ -153,16 +170,23 @@ function SettingsContent() {
     ])
     await fetchData()
     setSaving(false)
-    setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 3000)
+    showToast('設定を保存しました', 'success')
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
-        <div className="flex flex-col items-center gap-3">
-          <BearMascot size={80} mood="sleep" animate />
-          <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+      <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+        <div className="max-w-2xl mx-auto px-4 pt-0 pb-28 sm:pb-10 space-y-5">
+          {/* Profile banner skeleton */}
+          <div className="rounded-3xl h-24 shimmer" />
+          {/* Card skeletons */}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-2xl p-6" style={{ border: '1.5px solid #EDE8E3' }}>
+              <div className="h-3 w-20 rounded-full shimmer mb-4" />
+              <div className="h-4 w-full rounded-full shimmer mb-2" />
+              <div className="h-4 w-3/4 rounded-full shimmer" />
+            </div>
+          ))}
         </div>
       </div>
     )
@@ -172,11 +196,59 @@ function SettingsContent() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
-      <main className="max-w-2xl mx-auto px-4 pt-7 pb-28 sm:pb-10 space-y-5">
-        <div className="mb-6">
-          <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>設定</h1>
-          <p className="mt-1 text-sm" style={{ color: '#9B8B7E' }}>プロフィールと空き時間を設定しよう</p>
+      <main className="max-w-2xl mx-auto px-4 pt-0 pb-28 sm:pb-10 space-y-5 page-enter">
+        {/* Profile banner */}
+        <div className="rounded-3xl px-6 py-5 flex items-center gap-4"
+          style={{ background: 'linear-gradient(135deg, #F07050 0%, #F09070 60%, #F0B090 100%)' }}>
+          <div className="relative flex-shrink-0">
+            <Avatar name={editName || 'U'} avatarUrl={avatarUrl} size={64}
+              className="ring-4 ring-white/40" />
+            <button type="button" onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs"
+              style={{ background: '#F07050', border: '2px solid white' }}>
+              ✎
+            </button>
+          </div>
+          <div>
+            <p className="font-black text-white text-lg leading-tight">{editName || user?.name}</p>
+            <p className="text-white/70 text-xs font-bold mt-0.5">{user?.email}</p>
+            <p className="text-white/80 text-xs font-black mt-1">
+              {achievements.filter((a) => a.unlocked).length}個の実績 · {achievements.length}個中
+            </p>
+          </div>
         </div>
+
+        {/* Profile completion bar */}
+        {(() => {
+          const steps = [
+            { done: !!avatarUrl, label: 'アイコン' },
+            { done: availability.length > 0, label: '空き時間' },
+            { done: user?.googleCalendarConnected ?? false, label: 'カレンダー連携' },
+          ]
+          const doneCount = steps.filter((s) => s.done).length
+          const pct = Math.round((doneCount / steps.length) * 100)
+          if (pct === 100) return null
+          return (
+            <div className="rounded-2xl p-4" style={{ background: '#FFF0EC', border: '1.5px solid #F5C4B0' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-black" style={{ color: '#C85030' }}>プロフィール完成度</span>
+                <span className="text-sm font-black" style={{ color: '#F07050' }}>{pct}%</span>
+              </div>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: '#F5D0C0' }}>
+                <div className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${pct}%`, background: '#F07050' }} />
+              </div>
+              <div className="flex gap-3 mt-3 flex-wrap">
+                {steps.filter((s) => !s.done).map((s) => (
+                  <span key={s.label} className="text-xs font-black flex items-center gap-1"
+                    style={{ color: '#F07050' }}>
+                    <span>○</span> {s.label}を設定しよう
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         <Card>
           <SLabel>プロフィール</SLabel>
@@ -260,6 +332,40 @@ function SettingsContent() {
         </Card>
 
         <Card>
+          <div className="flex items-center justify-between">
+            <SLabel>実績バッジ</SLabel>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full"
+              style={{ background: '#FFF0EC', color: '#F07050' }}>
+              {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+            </span>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2.5 stagger-children">
+            {achievements.map((a) => (
+              <div
+                key={a.id}
+                className="rounded-2xl p-3 text-center relative transition-transform hover:scale-105"
+                style={{
+                  background: a.unlocked
+                    ? 'linear-gradient(135deg, #FFFDF9, #FFF8F0)'
+                    : '#FAFAF8',
+                  border: a.unlocked ? '1.5px solid #F5C4B0' : '1.5px dashed #EDE8E3',
+                  opacity: a.unlocked ? 1 : 0.45,
+                  boxShadow: a.unlocked ? '0 2px 12px rgba(240,112,80,0.18)' : 'none',
+                }}
+              >
+                {a.unlocked && (
+                  <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white"
+                    style={{ background: '#F07050' }}>✓</div>
+                )}
+                <div className="text-3xl mb-1.5 leading-none" style={{ filter: a.unlocked ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
+                <p className="text-[11px] font-black leading-tight" style={{ color: a.unlocked ? '#2D1B0E' : '#9B8B7E' }}>{a.label}</p>
+                <p className="text-[9px] font-bold mt-0.5 leading-tight" style={{ color: '#C8B8A8' }}>{a.desc}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
           <SLabel>価格帯</SLabel>
           <p className="text-xs mt-1 mb-4 font-bold" style={{ color: '#C8B8A8' }}>グループ提案時のレストランの基準になります</p>
           <div className="grid grid-cols-3 gap-2">
@@ -285,19 +391,24 @@ function SettingsContent() {
         </Card>
 
         <button onClick={handleSave} disabled={saving}
-          className="w-full py-4 rounded-2xl text-white font-black text-sm disabled:opacity-50"
+          className="w-full py-4 rounded-2xl text-white font-black text-sm disabled:opacity-50 transition-all active:scale-[0.98]"
           style={{ background: '#F07050', boxShadow: '0 4px 14px rgba(240,112,80,0.28)' }}>
-          {saving ? '保存中...' : '設定を保存'}
+          {saving ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              保存中...
+            </span>
+          ) : '設定を保存'}
         </button>
 
-        {saveSuccess && (
-          <div className="p-3 rounded-2xl text-sm text-center font-bold" style={{ background: '#F0FAF2', border: '1.5px solid #D4EDD8', color: '#3B8A5A' }}>
-            ✓ 設定を保存しました
-          </div>
-        )}
         {googleConnected && (
-          <div className="p-3 rounded-2xl text-sm text-center font-bold" style={{ background: '#EEF3FC', border: '1.5px solid #C5D9FA', color: '#4285F4' }}>
-            Googleカレンダーを連携しました
+          <div className="scale-in p-4 rounded-2xl text-sm text-center font-bold flex items-center justify-center gap-2"
+            style={{ background: '#EEF3FC', border: '1.5px solid #C5D9FA', color: '#4285F4' }}>
+            <span>✓</span>
+            Googleカレンダーを連携しました！
           </div>
         )}
         {googleError && (

@@ -1,18 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import BearMascot from '@/components/BearMascot'
+import { useToast } from '@/components/Toast'
 
 const GENRES = [
-  { value: 'all',      label: '全て' },
-  { value: 'music',    label: '音楽' },
-  { value: 'food',     label: 'グルメ' },
-  { value: 'sports',   label: 'スポーツ' },
-  { value: 'art',      label: 'アート' },
-  { value: 'theater',  label: '演劇' },
-  { value: 'festival', label: 'フェス' },
+  { value: 'all',      label: '全て',      emoji: '✨' },
+  { value: 'music',    label: '音楽',      emoji: '🎵' },
+  { value: 'food',     label: 'グルメ',    emoji: '🍜' },
+  { value: 'sports',   label: 'スポーツ',  emoji: '⚽' },
+  { value: 'art',      label: 'アート',    emoji: '🎨' },
+  { value: 'theater',  label: '演劇',      emoji: '🎭' },
+  { value: 'festival', label: 'フェス',    emoji: '🎉' },
 ]
 
 const genreEmoji: Record<string, string> = {
@@ -52,6 +53,7 @@ type Group = {
 
 export default function EventsPage() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [activeGenre, setActiveGenre] = useState('all')
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,6 +62,9 @@ export default function EventsPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [inviting, setInviting] = useState(false)
   const [inviteSent, setInviteSent] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [burstingId, setBurstingId] = useState<string | null>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth() + 1
@@ -78,6 +83,8 @@ export default function EventsPage() {
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
   async function toggleLike(event: Event) {
+    setBurstingId(event.id)
+    setTimeout(() => setBurstingId(null), 420)
     const res = await fetch(`/api/events/${event.id}/like`, { method: 'POST' })
     if (res.status === 401) { router.push('/'); return }
     const data = await res.json()
@@ -105,14 +112,22 @@ export default function EventsPage() {
     setInviting(false)
     if (!res.ok) {
       const data = await res.json()
-      alert(data.error || '提案の作成に失敗しました')
+      showToast(data.error || '提案の作成に失敗しました', 'error')
       return
     }
     setInviteSent(true)
     setTimeout(() => { setInviteEvent(null); router.push(`/groups/${groupId}`) }, 1000)
   }
 
-  const eventsByDate = events.reduce<Record<string, Event[]>>((acc, event) => {
+  const filteredEvents = searchQuery.trim()
+    ? events.filter((e) =>
+        e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.area.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : events
+
+  const eventsByDate = filteredEvents.reduce<Record<string, Event[]>>((acc, event) => {
     if (!acc[event.date]) acc[event.date] = []
     acc[event.date].push(event)
     return acc
@@ -137,7 +152,7 @@ export default function EventsPage() {
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 pt-7 pb-24">
+      <main className="max-w-2xl mx-auto px-4 pt-7 pb-24 page-enter">
         <div className="mb-6">
           <h1 className="text-2xl font-black" style={{ color: '#2D1B0E' }}>イベントカレンダー</h1>
           <p className="text-sm mt-1 font-bold" style={{ color: '#9B8B7E' }}>行きたいイベントに♡して友達を誘おう</p>
@@ -160,27 +175,82 @@ export default function EventsPage() {
           </button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-5" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
           {GENRES.map((g) => (
             <button key={g.value} onClick={() => setActiveGenre(g.value)}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-black transition-all"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-black transition-all active:scale-95"
               style={activeGenre === g.value
                 ? { background: '#F07050', color: 'white' }
                 : { background: 'white', color: '#9B8B7E', border: '1.5px solid #EDE8E3' }}>
+              <span className="text-base leading-none">{g.emoji}</span>
               {g.label}
             </button>
           ))}
         </div>
 
+        <div className="relative mb-5">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            style={{ color: '#C8B8A8' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            ref={searchRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="イベント・会場・エリアで検索"
+            className="w-full pl-9 pr-9 py-2.5 rounded-2xl text-sm font-bold outline-none"
+            style={{ background: 'white', border: '1.5px solid #EDE8E3', color: '#2D1B0E' }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(''); searchRef.current?.focus() }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ background: '#EDE8E3', color: '#9B8B7E' }}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+
         {loading ? (
-          <div className="flex flex-col items-center py-16 gap-3">
-            <BearMascot size={70} mood="sleep" animate />
-            <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+          <div className="space-y-6">
+            {[0, 1].map((g) => (
+              <div key={g}>
+                <div className="h-4 w-28 rounded-full shimmer mb-3" />
+                <div className="space-y-2">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="bg-white rounded-2xl p-4" style={{ border: '1.5px solid #EDE8E3' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-11 h-11 rounded-2xl shimmer flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 w-3/4 rounded-full shimmer" />
+                          <div className="h-3 w-1/2 rounded-full shimmer" />
+                          <div className="h-3 w-full rounded-full shimmer" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : sortedDates.length === 0 ? (
           <div className="flex flex-col items-center py-16 gap-3">
-            <BearMascot size={80} mood="wink" />
-            <p className="font-bold" style={{ color: '#2D1B0E' }}>この月のイベントはありません</p>
+            <BearMascot size={80} mood={searchQuery ? 'thinking' : 'sad'} animate animationType="float" />
+            <p className="font-bold text-center" style={{ color: '#2D1B0E' }}>
+              {searchQuery ? `「${searchQuery}」に一致するイベントはありません` : 'この月のイベントはありません'}
+            </p>
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="text-sm font-black px-4 py-2 rounded-2xl"
+                style={{ background: '#FFF0EC', color: '#F07050' }}>
+                検索をクリア
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
@@ -189,12 +259,12 @@ export default function EventsPage() {
                 <div className="text-sm font-black mb-2 px-1" style={{ color: dateColor(date) }}>
                   {formatDate(date)}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 stagger-children">
                   {eventsByDate[date].map((event) => {
                     const gs = genreStyle[event.genre] || { color: '#9B8B7E', bg: '#F5F0EB' }
                     return (
                       <div key={event.id} className="bg-white rounded-2xl p-4"
-                        style={{ border: '1.5px solid #EDE8E3' }}>
+                        style={{ border: `1.5px solid ${event.liked ? '#F5C4B0' : '#EDE8E3'}`, transition: 'border-color 0.2s' }}>
                         <div className="flex items-start gap-3">
                           <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
                             style={{ background: gs.bg }}>
@@ -212,7 +282,7 @@ export default function EventsPage() {
                                 )}
                               </div>
                               <button onClick={() => toggleLike(event)}
-                                className="flex-shrink-0 flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all active:scale-90"
+                                className={`flex-shrink-0 flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${burstingId === event.id ? 'heart-burst' : ''}`}
                                 style={{ color: event.liked ? '#F07050' : '#C8B8A8' }}>
                                 <svg className="w-5 h-5" fill={event.liked ? 'currentColor' : 'none'}
                                   stroke="currentColor" viewBox="0 0 24 24">
@@ -262,13 +332,15 @@ export default function EventsPage() {
       {inviteEvent && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setInviteEvent(null)} />
-          <div className="relative bg-white w-full max-w-2xl rounded-t-3xl p-6 pb-10"
+          <div className="slide-up relative bg-white w-full max-w-2xl rounded-t-3xl p-6 pb-10"
             style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.12)' }}>
             {inviteSent ? (
-              <div className="py-8 text-center">
-                <div className="text-4xl mb-3">🎉</div>
-                <div className="font-black" style={{ color: '#2D1B0E' }}>グループに提案しました！</div>
-                <div className="text-sm font-bold mt-1" style={{ color: '#9B8B7E' }}>グループページに移動します</div>
+              <div className="py-8 text-center flex flex-col items-center gap-3">
+                <BearMascot size={80} mood="celebrate" animate animationType="float" />
+                <div>
+                  <div className="font-black text-lg" style={{ color: '#2D1B0E' }}>グループに提案しました！🎉</div>
+                  <div className="text-sm font-bold mt-1" style={{ color: '#9B8B7E' }}>グループページに移動します</div>
+                </div>
               </div>
             ) : (
               <>
@@ -295,17 +367,23 @@ export default function EventsPage() {
                   <div className="space-y-2">
                     {groups.map((group) => (
                       <button key={group.id} onClick={() => inviteGroup(group.id)} disabled={inviting}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all"
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all active:scale-[0.98] disabled:opacity-60"
                         style={{ border: '1.5px solid #EDE8E3' }}>
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-base font-black text-white flex-shrink-0"
                           style={{ background: '#F07050' }}>
                           {group.name[0]}
                         </div>
-                        <span className="text-sm font-black" style={{ color: '#2D1B0E' }}>{group.name}</span>
-                        <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                          style={{ color: '#C8B8A8' }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <span className="text-sm font-black flex-1" style={{ color: '#2D1B0E' }}>{group.name}</span>
+                        {inviting ? (
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" style={{ color: '#C8B8A8' }}>
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#C8B8A8' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
                       </button>
                     ))}
                   </div>

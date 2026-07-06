@@ -27,8 +27,8 @@ export async function POST(
     return NextResponse.json({ error: 'すでにメンバーです' }, { status: 400 })
   }
 
-  if (group.members.length >= 4) {
-    return NextResponse.json({ error: 'グループは最大4人です' }, { status: 400 })
+  if (group.members.length >= 8) {
+    return NextResponse.json({ error: 'グループは最大8人です' }, { status: 400 })
   }
 
   const member = await prisma.groupMember.create({

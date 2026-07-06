@@ -6,8 +6,12 @@ import Navbar from '@/components/Navbar'
 import ProposalCard from '@/components/ProposalCard'
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import GroupChat from '@/components/GroupChat'
+import RestaurantPicker from '@/components/RestaurantPicker'
+import type { Restaurant } from '@/lib/restaurants'
 import BearMascot from '@/components/BearMascot'
 import Avatar from '@/components/Avatar'
+import Confetti from '@/components/Confetti'
+import { useToast } from '@/components/Toast'
 import Link from 'next/link'
 
 interface Member {
@@ -50,14 +54,7 @@ interface Group {
   proposals: Proposal[]
 }
 
-interface RestaurantSuggestion {
-  name: string
-  area: string
-  genre: string
-  priceRange: string
-  rating: number
-  description: string
-}
+type RestaurantSuggestion = Restaurant
 
 interface LikedEvent {
   event: { id: string; date: string; title: string; genre: string; venue: string; area: string }
@@ -80,6 +77,7 @@ export default function GroupDetailPage() {
   const router = useRouter()
   const params = useParams()
   const groupId = params.id as string
+  const { showToast } = useToast()
 
   const [group, setGroup] = useState<Group | null>(null)
   const [myRole, setMyRole] = useState<string>('member')
@@ -102,6 +100,7 @@ export default function GroupDetailPage() {
   const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSuggestion[]>([])
   const [showRestaurantPicker, setShowRestaurantPicker] = useState(false)
   const [likedEvents, setLikedEvents] = useState<LikedEvent[]>([])
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const fetchData = useCallback(async () => {
     const [meRes, groupRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/groups/${groupId}`)])
@@ -171,7 +170,20 @@ export default function GroupDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vote }),
     })
-    if (res.ok) await fetchData()
+    if (res.ok) {
+      const data = await res.json()
+      if (data.proposal?.status === 'confirmed') {
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 3000)
+        showToast('🎉 全員参加確定！', 'success')
+      } else {
+        const labels = { accept: '参加票を入れました', maybe: '未定票を入れました', decline: '欠席票を入れました' }
+        showToast(labels[vote], 'success')
+      }
+      await fetchData()
+    } else {
+      showToast('投票に失敗しました', 'error')
+    }
     setVotingId(null)
   }
 
@@ -214,8 +226,9 @@ export default function GroupDetailPage() {
     if (!res.ok) {
       setInviteError(data.error || 'エラーが発生しました')
     } else {
-      setInviteSuccess(`${data.member.user.name}さんをグループに追加しました`)
+      showToast(`${data.member.user.name}さんを招待しました！`, 'success')
       setInviteEmail('')
+      setShowInvite(false)
       await fetchData()
     }
     setInviting(false)
@@ -224,16 +237,43 @@ export default function GroupDetailPage() {
   function copyInviteLink() {
     navigator.clipboard.writeText(`${window.location.origin}/join/${groupId}`).then(() => {
       setLinkCopied(true)
+      showToast('招待リンクをコピーしました', 'success')
       setTimeout(() => setLinkCopied(false), 2000)
     })
   }
 
+  function shareInviteLink() {
+    const url = `${window.location.origin}/join/${groupId}`
+    const text = `${group?.name}のグループに招待されました！tomomeetで一緒に予定を立てよう🗓️`
+    if (navigator.share) {
+      navigator.share({ title: 'tomomeet', text, url })
+    } else {
+      const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text + '\n' + url)}`
+      window.open(lineUrl, '_blank')
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFDF9' }}>
-        <div className="flex flex-col items-center gap-3">
-          <BearMascot size={80} mood="sleep" animate />
-          <p className="text-sm font-bold" style={{ color: '#9B8B7E' }}>よみこみ中...</p>
+      <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+        <div className="max-w-2xl mx-auto px-4 pt-6 pb-24">
+          <div className="h-4 w-32 rounded-full shimmer mb-6" />
+          <div className="bg-white rounded-2xl p-6 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
+            <div className="h-6 w-1/2 rounded-full shimmer mb-3" />
+            <div className="h-3 w-3/4 rounded-full shimmer mb-5" />
+            <div className="flex gap-3 mt-5">
+              {[1, 2, 3].map((i) => <div key={i} className="w-9 h-9 rounded-full shimmer" />)}
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
+            <div className="h-4 w-40 rounded-full shimmer mb-4" />
+            <div className="grid grid-cols-7 gap-1.5">
+              {Array.from({ length: 28 }).map((_, i) => (
+                <div key={i} className="aspect-square rounded-xl shimmer" />
+              ))}
+            </div>
+          </div>
+          <div className="h-14 w-full rounded-2xl shimmer" />
         </div>
       </div>
     )
@@ -247,30 +287,62 @@ export default function GroupDetailPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
+      <Confetti trigger={showConfetti} />
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 pt-6 pb-24 sm:pb-10">
+      <main className="max-w-2xl mx-auto px-4 pt-6 pb-24 sm:pb-10 page-enter">
         {/* Back */}
         <button onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-1.5 text-sm font-bold mb-6 transition-colors"
+          className="flex items-center gap-1.5 text-sm font-bold mb-6 transition-all hover:gap-2.5 group"
           style={{ color: '#9B8B7E' }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
           </svg>
           ダッシュボードへ
         </button>
 
         {/* Group header */}
-        <div className="bg-white rounded-2xl p-6 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
-          <h1 className="text-xl font-black" style={{ color: '#2D1B0E' }}>{group.name}</h1>
-          {group.description && (
-            <p className="text-sm mt-1" style={{ color: '#9B8B7E' }}>{group.description}</p>
-          )}
-          <p className="text-xs mt-1 font-bold" style={{ color: '#C8B8A8' }}>{priceLabels[group.priceRange]}</p>
+        <div className="bg-white rounded-2xl mb-5 overflow-hidden" style={{ border: '1.5px solid #EDE8E3' }}>
+          {/* Color banner */}
+          <div className="px-6 py-4 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #F07050, #F09070, #F0B090, #F07864)', backgroundSize: '300% 300%', animation: 'gradientShift 8s ease infinite' }}>
+            <style>{`@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
+            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-15" style={{ background: 'white' }} />
+            <div className="absolute -right-2 -bottom-8 w-16 h-16 rounded-full opacity-10" style={{ background: 'white' }} />
+            <div className="relative z-10">
+              <h1 className="text-xl font-black text-white leading-tight">{group.name}</h1>
+              {group.description && (
+                <p className="text-sm mt-0.5 font-bold text-white/75 line-clamp-1">{group.description}</p>
+              )}
+              <span className="mt-2 inline-block text-[11px] font-black text-white/85 bg-white/20 px-2.5 py-0.5 rounded-full">
+                {priceLabels[group.priceRange]}
+              </span>
+            </div>
+          </div>
+          <div className="p-6 pt-5">
 
           {/* Members */}
           <div className="mt-5">
-            <p className="text-xs font-black mb-3" style={{ color: '#9B8B7E' }}>メンバー ({group.members.length}人)</p>
+            {(() => {
+              const withAvail = group.members.filter((m) => m.user.hasAvailability !== false).length
+              const ready = withAvail === group.members.length
+              return (
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-black" style={{ color: '#9B8B7E' }}>メンバー ({group.members.length}人)</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex gap-0.5">
+                      {group.members.map((m, i) => (
+                        <div key={m.id} className="w-2 h-2 rounded-full"
+                          style={{ background: m.user.hasAvailability !== false ? '#4ADE80' : '#EDE8E3' }} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-black" style={{ color: ready ? '#3B8A5A' : '#C8B8A8' }}>
+                      {ready ? '全員準備OK！' : `${withAvail}/${group.members.length}人設定済み`}
+                    </span>
+                  </div>
+                </div>
+              )
+            })()}
             <div className="flex flex-wrap gap-3">
               {group.members.map((m, i) => (
                 <div key={m.id} className="flex items-center gap-2">
@@ -297,27 +369,41 @@ export default function GroupDetailPage() {
           </div>
 
           {/* Invite */}
-          {group.members.length < 4 && (
+          {group.members.length < 8 && (
             <div className="mt-4 pt-4" style={{ borderTop: '1px solid #F5F0EB' }}>
               {!showInvite ? (
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setShowInvite(true)}
-                    className="text-sm font-black flex items-center gap-1"
-                    style={{ color: '#7AC8A0' }}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                <div className="space-y-2">
+                  <button onClick={shareInviteLink}
+                    className="w-full py-3 rounded-2xl text-white text-sm font-black flex items-center justify-center gap-2"
+                    style={{ background: '#06C755' }}>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.627.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
                     </svg>
-                    メールで招待
+                    LINEで友達を招待する
                   </button>
-                  <span style={{ color: '#EDE8E3' }}>|</span>
-                  <button onClick={copyInviteLink} className="text-sm font-black flex items-center gap-1"
-                    style={{ color: '#7AC8A0' }}>
-                    {linkCopied ? (
-                      <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>コピー済み</>
-                    ) : (
-                      <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>招待リンクをコピー</>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setShowInvite(true)}
+                      className="text-sm font-black flex items-center gap-1"
+                      style={{ color: '#7AC8A0' }}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                      </svg>
+                      メールで招待
+                    </button>
+                    <span style={{ color: '#EDE8E3' }}>|</span>
+                    <button onClick={copyInviteLink} className="text-sm font-black flex items-center gap-1 transition-all"
+                      style={{ color: linkCopied ? '#5BAF7A' : '#7AC8A0' }}>
+                      {linkCopied ? (
+                        <span className="flex items-center gap-1 scale-in">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>コピー済み
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>招待リンクをコピー
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleInvite} className="space-y-2">
@@ -332,9 +418,17 @@ export default function GroupDetailPage() {
                   {inviteSuccess && <p className="text-xs font-bold" style={{ color: '#5BAF7A' }}>{inviteSuccess}</p>}
                   <div className="flex gap-2">
                     <button type="submit" disabled={inviting}
-                      className="flex-1 py-3 rounded-2xl text-white text-sm font-black disabled:opacity-60"
+                      className="flex-1 py-3 rounded-2xl text-white text-sm font-black disabled:opacity-60 transition-all active:scale-[0.98]"
                       style={{ background: '#7AC8A0' }}>
-                      {inviting ? '招待中...' : '招待する'}
+                      {inviting ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          招待中...
+                        </span>
+                      ) : '招待する'}
                     </button>
                     <button type="button"
                       onClick={() => { setShowInvite(false); setInviteError(''); setInviteSuccess('') }}
@@ -364,6 +458,7 @@ export default function GroupDetailPage() {
               </button>
             )}
           </div>
+          </div>{/* end inner p-6 */}
         </div>
 
         {/* Availability nudge */}
@@ -382,6 +477,27 @@ export default function GroupDetailPage() {
           </div>
         )}
 
+        {/* Solo group invite nudge */}
+        {group.members.length === 1 && (
+          <div className="mb-5 rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, #EEF3FC 0%, #F0F8FF 100%)', border: '1.5px solid #BDD3F8' }}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="text-2xl">👥</div>
+              <div>
+                <p className="font-black text-sm" style={{ color: '#2D4080' }}>友達を招待して一緒に計画しよう！</p>
+                <p className="text-xs font-bold mt-0.5" style={{ color: '#6B8FD4' }}>2人以上になるとマッチングが始まります</p>
+              </div>
+            </div>
+            <button onClick={shareInviteLink}
+              className="w-full py-3 rounded-2xl text-white text-sm font-black flex items-center justify-center gap-2"
+              style={{ background: '#06C755' }}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.627.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+              </svg>
+              LINEで友達を招待する
+            </button>
+          </div>
+        )}
+
         {/* Availability heatmap */}
         <div className="bg-white rounded-2xl p-5 mb-5" style={{ border: '1.5px solid #EDE8E3' }}>
           <SLabel>みんなの空き時間（次の4週間）</SLabel>
@@ -393,13 +509,16 @@ export default function GroupDetailPage() {
         {/* Propose button */}
         <div className="mb-6">
           <button onClick={handlePropose} disabled={proposing}
-            className="w-full py-4 text-white rounded-2xl font-black text-base transition-opacity disabled:opacity-60"
-            style={{ background: '#F07050', boxShadow: '0 4px 16px rgba(240,112,80,0.28)' }}>
-            {proposing
-              ? '最適な日程を計算中...'
-              : selectedDate
-                ? `📅 ${selectedDate.slice(5).replace('-', '/')} で提案する`
-                : '✨ 自動で最適な日程を提案する'}
+            className="w-full py-4 text-white rounded-2xl font-black text-base transition-all active:scale-[0.98] disabled:opacity-70 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #F07050, #F09070)', boxShadow: '0 4px 20px rgba(240,112,80,0.35)' }}>
+            {proposing ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
+                最適な日程を計算中...
+              </span>
+            ) : selectedDate
+              ? `📅 ${selectedDate.slice(5).replace('-', '/')} で提案する`
+              : '✨ 自動で最適な日程を提案する'}
           </button>
           {proposeError && (
             <div className="mt-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-center"
@@ -450,8 +569,30 @@ export default function GroupDetailPage() {
         )}
 
         {group.proposals.length === 0 && (
-          <div className="text-center py-8 font-bold mb-6" style={{ color: '#C8B8A8', fontSize: '0.875rem' }}>
-            まだ提案がありません。上のボタンで自動提案を試してみましょう！
+          <div className="mb-6 rounded-2xl p-6 text-center" style={{ background: '#FAFAF8', border: '1.5px dashed #EDE8E3' }}>
+            <div className="flex justify-center mb-3">
+              <BearMascot size={70} mood="thinking" animate animationType="float" />
+            </div>
+            <div className="font-black text-sm mb-1" style={{ color: '#2D1B0E' }}>まだ提案がありません</div>
+            <div className="text-xs font-bold mb-4" style={{ color: '#C8B8A8' }}>
+              ボタンを押すとAIが最適なお店と日程を<br/>自動で提案してくれます
+            </div>
+            <div className="flex gap-2 justify-center text-xs font-black flex-wrap" style={{ color: '#9B8B7E' }}>
+              <span className="flex items-center gap-1">
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{ background: '#F07050' }}>1</span>
+                空き時間を登録
+              </span>
+              <span style={{ color: '#EDE8E3' }}>›</span>
+              <span className="flex items-center gap-1">
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{ background: '#F07050' }}>2</span>
+                自動提案する
+              </span>
+              <span style={{ color: '#EDE8E3' }}>›</span>
+              <span className="flex items-center gap-1">
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{ background: '#F07050' }}>3</span>
+                みんなで投票
+              </span>
+            </div>
           </div>
         )}
 
@@ -459,10 +600,15 @@ export default function GroupDetailPage() {
         {likedEvents.length > 0 && (
           <section className="mb-6">
             <SLabel>みんなが気になっているイベント ♡</SLabel>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 stagger-children">
               {likedEvents.map(({ event, likedBy }) => {
                 const genreEmoji: Record<string, string> = { music: '🎵', food: '🍜', sports: '⚽', art: '🎨', theater: '🎭', festival: '🎉' }
                 const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(event.venue + ' ' + event.area)}`
+                const evtDate = (() => {
+                  const d = new Date(event.date + 'T00:00:00')
+                  const days = ['日', '月', '火', '水', '木', '金', '土']
+                  return `${d.getMonth() + 1}月${d.getDate()}日（${days[d.getDay()]}）`
+                })()
                 return (
                   <div key={event.id} className="bg-white rounded-2xl p-4" style={{ border: '1.5px solid #EDE8E3' }}>
                     <div className="flex items-start gap-3">
@@ -471,7 +617,7 @@ export default function GroupDetailPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-black text-sm leading-snug" style={{ color: '#2D1B0E' }}>{event.title}</div>
-                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{event.date} · {event.venue}（{event.area}）</div>
+                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{evtDate} · {event.venue}（{event.area}）</div>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           {likedBy.map((u) => (
                             <span key={u.id} className="text-[11px] px-2 py-0.5 rounded-full font-black"
@@ -481,11 +627,26 @@ export default function GroupDetailPage() {
                           ))}
                         </div>
                       </div>
-                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                        className="shrink-0 text-xs font-black px-3 py-2 rounded-xl"
-                        style={{ background: '#F5F0EB', color: '#6B5B4E' }}>
-                        地図
-                      </a>
+                      <div className="flex flex-col gap-1.5 shrink-0">
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-xs font-black px-3 py-2 rounded-xl text-center"
+                          style={{ background: '#F5F0EB', color: '#6B5B4E' }}>
+                          地図
+                        </a>
+                        <button
+                          onClick={async () => {
+                            const res = await fetch(`/api/events/${event.id}/invite`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ groupId }),
+                            })
+                            if (res.ok) { await fetchData(); setProposeError('') }
+                          }}
+                          className="text-xs font-black px-3 py-2 rounded-xl text-center transition-all active:scale-95"
+                          style={{ background: '#FFF0EC', color: '#F07050' }}>
+                          提案する
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -505,51 +666,22 @@ export default function GroupDetailPage() {
 
       {/* Restaurant picker modal */}
       {showRestaurantPicker && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50"
-          onClick={() => { setShowRestaurantPicker(false); setProposing(false) }}>
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md"
-            style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.15)' }}
-            onClick={(e) => e.stopPropagation()}>
-            <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: '#EDE8E3' }} />
-            </div>
-            <div className="p-6 pt-4">
-              <h3 className="text-lg font-black mb-1" style={{ color: '#2D1B0E' }}>お店を選んで提案する</h3>
-              <p className="text-xs font-bold mb-5" style={{ color: '#C8B8A8' }}>3つの候補から選ぼう。グループの価格帯に合わせて絞り込んでいます</p>
-              <div className="space-y-3">
-                {restaurantSuggestions.map((r, i) => (
-                  <button key={i} onClick={() => handleProposeWithRestaurant(r)}
-                    className="w-full text-left p-4 rounded-2xl transition-all active:scale-[0.98]"
-                    style={{ border: '1.5px solid #EDE8E3', background: '#FAFAF8' }}>
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#FFF0EC' }}>
-                        🍽️
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-black text-sm" style={{ color: '#2D1B0E' }}>{r.name}</div>
-                        <div className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{r.area} · {r.genre}</div>
-                        <div className="text-xs mt-1 line-clamp-1" style={{ color: '#C8B8A8' }}>{r.description}</div>
-                      </div>
-                      <div className="text-xs font-black shrink-0" style={{ color: '#F0C050' }}>★ {r.rating}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              <button onClick={() => handleProposeWithRestaurant(null)}
-                className="w-full mt-3 py-3 rounded-2xl text-sm font-black"
-                style={{ color: '#C8B8A8', border: '1.5px solid #EDE8E3' }}>
-                ランダムで決める
-              </button>
-            </div>
-          </div>
-        </div>
+        <RestaurantPicker
+          suggestions={restaurantSuggestions}
+          groupId={groupId}
+          onSelect={handleProposeWithRestaurant}
+          onClose={() => { setShowRestaurantPicker(false); setProposing(false) }}
+        />
       )}
 
       {/* Leave confirm modal */}
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
           onClick={() => setShowLeaveConfirm(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="bounce-in bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center mb-3">
+              <BearMascot size={64} mood="thinking" animate />
+            </div>
             <h3 className="text-lg font-black mb-2" style={{ color: '#2D1B0E' }}>グループを退出しますか？</h3>
             <p className="text-sm font-bold mb-6" style={{ color: '#9B8B7E' }}>退出するとこのグループの提案やチャットにアクセスできなくなります。</p>
             <div className="flex gap-3">
@@ -572,7 +704,10 @@ export default function GroupDetailPage() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
           onClick={() => setShowDeleteConfirm(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="bounce-in bg-white rounded-3xl p-6 w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center mb-3">
+              <BearMascot size={64} mood="sad" animate />
+            </div>
             <h3 className="text-lg font-black mb-2" style={{ color: '#2D1B0E' }}>グループを削除しますか？</h3>
             <p className="text-sm font-bold mb-6" style={{ color: '#9B8B7E' }}>この操作は取り消せません。メンバー全員のデータが削除されます。</p>
             <div className="flex gap-3">

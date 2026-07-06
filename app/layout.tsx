@@ -5,18 +5,30 @@ import ClientShell from '@/components/ClientShell'
 
 const mplus = M_PLUS_Rounded_1c({
   subsets: ['latin'],
-  weight: ['400', '700', '800'],
+  weight: ['400', '700', '800', '900'],
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'lifematch - 友達との予定、ぜんぶおまかせ！',
-  description: '友達との予定、ぜんぶおまかせ！グループの空き時間を自動でマッチング。',
+  title: 'tomomeet - 友達との予定を、かんたんに',
+  description: '友達グループの空き時間を自動でマッチング。お店の提案から投票まで一括管理。',
   manifest: '/manifest.json',
+  keywords: ['友達', '予定', 'グループ', '食事', 'マッチング'],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'tomomeet - 友達との予定を、かんたんに',
+    description: '友達グループの空き時間を自動でマッチング。お店の提案から投票まで一括管理。',
+    siteName: 'tomomeet',
+    locale: 'ja_JP',
+    type: 'website',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'lifematch',
+    title: 'tomomeet',
   },
 }
 
