@@ -129,6 +129,16 @@ const FK_SQL = [
 // Idempotent column additions for already-existing databases.
 const MIGRATIONS = [
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT`,
+  `CREATE TABLE IF NOT EXISTS "SponsorEvent" (
+    "id" TEXT NOT NULL,
+    "restaurantName" TEXT NOT NULL,
+    "action" TEXT NOT NULL,
+    "userId" TEXT,
+    "groupId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "SponsorEvent_pkey" PRIMARY KEY ("id")
+  )`,
+  `CREATE INDEX IF NOT EXISTS "SponsorEvent_restaurantName_action_idx" ON "SponsorEvent"("restaurantName", "action")`,
 ]
 
 async function runMigrations() {
