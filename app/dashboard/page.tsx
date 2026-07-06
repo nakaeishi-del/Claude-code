@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import GroupCard from '@/components/GroupCard'
+import Avatar from '@/components/Avatar'
 import BearMascot from '@/components/BearMascot'
 import Confetti from '@/components/Confetti'
+import OnboardingTour from '@/components/OnboardingTour'
 import { useToast } from '@/components/Toast'
 
 interface User { id: string; name: string; email: string; priceRange: string; avatarUrl?: string | null }
@@ -18,6 +20,11 @@ interface Group {
 }
 interface Activity {
   id: string; type: string; groupId: string; groupName: string; text: string; createdAt: string
+}
+interface Memory {
+  id: string; date: string; restaurantName: string; restaurantArea: string
+  groupId: string; groupName: string
+  members: { id: string; name: string; avatarUrl?: string | null }[]
 }
 const priceRangeOptions = [
   { value: 'budget', label: 'リーズナブル', sub: '〜¥3,000' },
@@ -36,16 +43,18 @@ export default function DashboardPage() {
   const [formError, setFormError] = useState('')
   const [form, setForm] = useState({ name: '', description: '', priceRange: 'mid' })
   const [showConfetti, setShowConfetti] = useState(false)
+  const [memories, setMemories] = useState<Memory[]>([])
   const { showToast } = useToast()
 
   const fetchData = useCallback(async () => {
-    const [meRes, groupsRes, activityRes] = await Promise.all([
-      fetch('/api/auth/me'), fetch('/api/groups'), fetch('/api/me/activity')
+    const [meRes, groupsRes, activityRes, historyRes] = await Promise.all([
+      fetch('/api/auth/me'), fetch('/api/groups'), fetch('/api/me/activity'), fetch('/api/me/history')
     ])
     if (!meRes.ok) { router.push('/'); return }
     setUser((await meRes.json()).user)
     setGroups((await groupsRes.json()).groups || [])
     if (activityRes.ok) setActivities((await activityRes.json()).activities || [])
+    if (historyRes.ok) setMemories((await historyRes.json()).memories || [])
     setLoading(false)
   }, [router])
 
@@ -126,6 +135,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen" style={{ background: '#FFFDF9' }}>
       <Confetti trigger={showConfetti} />
+      <OnboardingTour />
       <Navbar userName={user?.name} avatarUrl={user?.avatarUrl} />
 
       <main className="max-w-5xl mx-auto px-4 pt-0 pb-24 sm:pb-10 page-enter">
@@ -298,6 +308,54 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
+
+        {/* Memories: past confirmed meetups */}
+        {memories.length > 0 && (
+          <section className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <SLabel>これまでの集まり 🎞️</SLabel>
+              <span className="text-xs font-black px-2.5 py-1 rounded-full"
+                style={{ background: '#F5EEFA', color: '#A87FD0' }}>
+                {memories.length}回
+              </span>
+            </div>
+            <div className="grid gap-2.5 stagger-children">
+              {memories.slice(0, 4).map((m) => {
+                const d = new Date(m.date + 'T00:00:00')
+                return (
+                  <div key={m.id}
+                    onClick={() => router.push(`/groups/${m.groupId}`)}
+                    className="bg-white rounded-2xl p-4 flex items-center gap-3.5 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
+                    style={{ border: '1.5px solid #EDE8E3' }}>
+                    {/* Date block */}
+                    <div className="w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0"
+                      style={{ background: '#F5EEFA' }}>
+                      <span className="text-[9px] font-black leading-none" style={{ color: '#A87FD0' }}>{d.getMonth() + 1}月</span>
+                      <span className="text-lg font-black leading-tight" style={{ color: '#7B5EA0' }}>{d.getDate()}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-sm truncate" style={{ color: '#2D1B0E' }}>{m.restaurantName}</p>
+                      <p className="text-xs mt-0.5 font-bold" style={{ color: '#9B8B7E' }}>{m.groupName} · {m.restaurantArea}</p>
+                    </div>
+                    <div className="flex -space-x-2 shrink-0">
+                      {m.members.slice(0, 3).map((u) => (
+                        <div key={u.id} className="ring-2 ring-white rounded-full">
+                          <Avatar name={u.name} avatarUrl={u.avatarUrl} size={26} color="#A87FD0" />
+                        </div>
+                      ))}
+                      {m.members.length > 3 && (
+                        <div className="w-[26px] h-[26px] rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-black"
+                          style={{ background: '#F5EEFA', color: '#A87FD0' }}>
+                          +{m.members.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Modal */}
